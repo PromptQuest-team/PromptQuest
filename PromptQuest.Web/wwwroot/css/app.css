@@ -1,0 +1,362 @@
+:root {
+  --bg: #10151c;
+  --panel: #1a2230;
+  --panel-alt: #212b3c;
+  --accent: #4aa8ff;
+  --accent-2: #7ed957;
+  --text: #e8edf4;
+  --text-dim: #9aabc2;
+  --danger: #e74c3c;
+  --border: #2c3a4f;
+  --radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--accent);
+}
+
+.main-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.main-nav a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.main-nav a:hover {
+  color: var(--text);
+}
+
+main#app {
+  padding: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+button,
+.primary-button,
+.secondary-button {
+  font-family: inherit;
+  font-size: 0.95rem;
+  border-radius: var(--radius);
+  border: none;
+  padding: 8px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.primary-button {
+  background: var(--accent);
+  color: #05131f;
+  font-weight: 600;
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  background: var(--panel-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--panel-alt);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  width: 100%;
+}
+
+textarea {
+  font-family: "Consolas", "Courier New", monospace;
+  resize: vertical;
+}
+
+.error-message {
+  color: var(--danger);
+  margin-top: 8px;
+}
+
+/* Экран никнейма */
+.screen-nickname {
+  max-width: 420px;
+  margin: 60px auto;
+  text-align: center;
+}
+
+.nickname-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.nickname-form input {
+  flex: 1;
+}
+
+/* Экран уровней */
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.level-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+}
+
+.level-card:hover {
+  border-color: var(--accent);
+}
+
+.level-card.completed {
+  border-color: var(--accent-2);
+}
+
+.level-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.level-card-order {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+}
+
+.level-card-badge {
+  background: var(--accent-2);
+  color: #06210f;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.level-card-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.level-card-meta {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.level-card-best {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--accent-2);
+}
+
+/* Экран игры */
+.play-topbar {
+  display: flex;
+  gap: 24px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.play-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.play-left,
+.play-right {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.play-left h3,
+.play-right h3 {
+  margin-top: 0;
+}
+
+.scene-container {
+  background: #06090d;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 10px 0;
+  min-height: 280px;
+}
+
+.sandbox-frame {
+  width: 100%;
+  height: 280px;
+  border: none;
+  display: block;
+  background: #fff;
+}
+
+.sandbox-timeout-message {
+  height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  color: var(--danger);
+}
+
+.hint {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.mode-note {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: 4px 0;
+}
+
+.checks-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+
+.check-item {
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background: var(--panel-alt);
+}
+
+.check-item.check-pass .check-mark {
+  color: var(--accent-2);
+}
+
+.check-item.check-fail .check-mark {
+  color: var(--danger);
+}
+
+.check-mark {
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+.check-detail {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-top: 4px;
+}
+
+.victory-panel {
+  margin-top: 16px;
+  padding: 14px;
+  background: #10281a;
+  border: 1px solid var(--accent-2);
+  border-radius: var(--radius);
+}
+
+.victory-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#run-button,
+#submit-prompt-button {
+  margin: 8px 0;
+}
+
+/* Экран таблицы лидеров */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.tab-button {
+  background: var(--panel-alt);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.tab-button.active {
+  background: var(--accent);
+  color: #05131f;
+  font-weight: 600;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.leaderboard-table tr.current-player {
+  background: rgba(74, 168, 255, 0.15);
+}
+
+#level-select {
+  margin-bottom: 10px;
+}
+
+/* Адаптивность */
+@media (max-width: 780px) {
+  .play-columns {
+    grid-template-columns: 1fr;
+  }
+}

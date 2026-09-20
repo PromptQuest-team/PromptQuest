@@ -1,0 +1,24 @@
+# Visual Studio / .NET build output
+[Bb]in/
+[Oo]bj/
+*.user
+
+# Visual Studio IDE state
+.vs/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# Claude Code project state
+.claude/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs / local scratch
+*.log

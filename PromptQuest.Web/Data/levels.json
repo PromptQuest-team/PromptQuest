@@ -1,0 +1,416 @@
+[
+  {
+    "id": "css-01-justify",
+    "order": 1,
+    "category": "css",
+    "title": "Доставь лягушку к кувшинке",
+    "goal": "Лягушка должна оказаться на кувшинке у правого края пруда.",
+    "hint": "Опиши ИИ не приём, а результат: где именно должна оказаться лягушка.",
+    "difficulty": 1,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:400px;top:8px;width:72px;height:72px;background:#2f8f4e}"
+    },
+    "codeTemplate": "#pond {\n  \n}",
+    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "frog-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog",
+          "target": "#lily",
+          "description": "Лягушка находится на кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-02-align",
+    "order": 2,
+    "category": "css",
+    "title": "Опусти лягушку на дно пруда",
+    "goal": "Лягушка должна опуститься на кувшинку у нижнего края пруда.",
+    "hint": "Опиши, у какого края по вертикали должна оказаться лягушка.",
+    "difficulty": 1,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:8px;top:180px;width:72px;height:72px;background:#2f8f4e}"
+    },
+    "codeTemplate": "#pond {\n  \n}",
+    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "frog-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog",
+          "target": "#lily",
+          "description": "Лягушка находится на кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-03-center",
+    "order": 3,
+    "category": "css",
+    "title": "Собери лягушку в центре пруда",
+    "goal": "Лягушка должна оказаться ровно в центре пруда.",
+    "hint": "Опиши положение и по горизонтали, и по вертикали одновременно.",
+    "difficulty": 1,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:flex;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:204px;top:94px;width:72px;height:72px;background:#2f8f4e}"
+    },
+    "codeTemplate": "#pond {\n  \n}",
+    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "frog-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog",
+          "target": "#lily",
+          "description": "Лягушка находится на кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-04-reverse",
+    "order": 4,
+    "category": "css",
+    "title": "Расставь лягушек по своим кувшинкам",
+    "goal": "Каждая лягушка должна оказаться на кувшинке своего цвета: порядок расположения кувшинок зеркальный по отношению к порядку лягушек.",
+    "hint": "Опиши, что видимый порядок лягушек должен быть развёрнут в обратную сторону.",
+    "difficulty": 2,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;justify-content:space-between;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px}#frog-red{background:#e74c3c}#frog-green{background:#7ed957}#frog-blue{background:#4aa8ff}.lily{top:8px;width:72px;height:72px}#lily-red{background:#c0392b;left:400px}#lily-green{background:#2f8f4e;left:204px}#lily-blue{background:#1b5faa;left:8px}"
+    },
+    "codeTemplate": "#pond {\n  \n}",
+    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "red-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-red",
+          "target": "#lily-red",
+          "description": "Красная лягушка на своей кувшинке"
+        },
+        {
+          "id": "green-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-green",
+          "target": "#lily-green",
+          "description": "Зелёная лягушка на своей кувшинке"
+        },
+        {
+          "id": "blue-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-blue",
+          "target": "#lily-blue",
+          "description": "Синяя лягушка на своей кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-05-spread",
+    "order": 5,
+    "category": "css",
+    "title": "Расставь лягушек равномерно",
+    "goal": "Три лягушки должны стоять равномерно по ширине пруда, крайние — вплотную к краям.",
+    "hint": "Опиши равные промежутки между лягушками и то, что крайние прижаты к границам.",
+    "difficulty": 2,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog-1\" class=\"frog\"></div><div id=\"frog-2\" class=\"frog\"></div><div id=\"frog-3\" class=\"frog\"></div><div id=\"lily-1\" class=\"lily\"></div><div id=\"lily-2\" class=\"lily\"></div><div id=\"lily-3\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px;background:#7ed957}.lily{top:8px;width:72px;height:72px;background:#2f8f4e}#lily-1{left:8px}#lily-2{left:204px}#lily-3{left:400px}"
+    },
+    "codeTemplate": "#pond {\n  \n}",
+    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "frog-1-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-1",
+          "target": "#lily-1",
+          "description": "Первая лягушка на своей кувшинке"
+        },
+        {
+          "id": "frog-2-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-2",
+          "target": "#lily-2",
+          "description": "Вторая лягушка на своей кувшинке"
+        },
+        {
+          "id": "frog-3-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-3",
+          "target": "#lily-3",
+          "description": "Третья лягушка на своей кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-06-grid",
+    "order": 6,
+    "category": "css",
+    "title": "Посади лягушку в нужную клетку",
+    "goal": "Лягушка должна попасть в правую нижнюю клетку сетки 3×3.",
+    "hint": "Опиши, в каком столбце и в какой строке сетки должна оказаться лягушка.",
+    "difficulty": 2,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#frog{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}"
+    },
+    "codeTemplate": "#frog {\n  \n}",
+    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "frog-in-cell9",
+          "kind": "containedIn",
+          "subject": "#frog",
+          "target": "#cell-9",
+          "description": "Лягушка находится в правой нижней клетке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "sel-01-type",
+    "order": 7,
+    "category": "selector",
+    "title": "Выбери все тарелки",
+    "goal": "На столе вперемешку стоит посуда: несколько плоских тарелок разного размера и одна глубокая миска. Выбери только плоскую посуду для еды, не задев миску, чашку и вилку.",
+    "hint": "Подсказка: обрати внимание не только на то, что предмет круглый, а на его форму и глубину — миска и тарелка выглядят похоже, но это разная посуда.",
+    "difficulty": 1,
+    "injectionMode": "selector",
+    "scene": {
+      "html": "<div id=\"table\"><div class=\"item\" id=\"p1\" data-code=\"1\" data-scale=\"100\"></div><div class=\"item\" id=\"b1\" data-code=\"2\" data-scale=\"100\"></div><div class=\"item\" id=\"c1\" data-code=\"3\" data-scale=\"100\"></div><div class=\"item\" id=\"p2\" data-code=\"1\" data-scale=\"100\"></div><div class=\"item\" id=\"f1\" data-code=\"4\" data-scale=\"100\"></div><div class=\"item\" id=\"p3\" data-code=\"1\" data-scale=\"60\"></div></div>",
+      "baseCss": "#table{display:flex;align-items:center;gap:14px;padding:16px;background:#d8c9a3}.item{display:inline-block}[data-code=\"1\"]{width:48px;height:48px;background:#fff;border-radius:50%;box-shadow:inset 0 0 0 4px #cbb994}[data-code=\"1\"][data-scale=\"60\"]{width:28px;height:28px}[data-code=\"2\"]{width:50px;height:50px;background:#f3e9d2;border-radius:50%;box-shadow:inset 0 0 0 9px #cbb994}[data-code=\"3\"]{width:32px;height:40px;background:#8ecae6;border-radius:4px}[data-code=\"4\"]{width:8px;height:48px;background:#999}"
+    },
+    "codeTemplate": "",
+    "systemPrompt": "Ты возвращаешь только CSS-селектор, одной строкой, без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "select-plates",
+          "kind": "selectorMatches",
+          "expectedIds": ["p1", "p2", "p3"],
+          "description": "Выбраны все тарелки"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "sel-02-class",
+    "order": 8,
+    "category": "selector",
+    "title": "Выбери только маленькие тарелки",
+    "goal": "На столе тарелки двух размеров и чашки двух размеров вперемешку. Выбери только уменьшенные тарелки, не задев маленькую чашку.",
+    "hint": "Подсказка: одного размера недостаточно — уточни ещё и вид посуды, иначе заденешь маленькую чашку.",
+    "difficulty": 1,
+    "injectionMode": "selector",
+    "scene": {
+      "html": "<div id=\"table\"><div class=\"item\" id=\"p1\" data-code=\"1\" data-scale=\"100\"></div><div class=\"item\" id=\"p2\" data-code=\"1\" data-scale=\"60\"></div><div class=\"item\" id=\"p3\" data-code=\"1\" data-scale=\"100\"></div><div class=\"item\" id=\"p4\" data-code=\"1\" data-scale=\"60\"></div><div class=\"item\" id=\"c1\" data-code=\"3\" data-scale=\"100\"></div><div class=\"item\" id=\"c2\" data-code=\"3\" data-scale=\"60\"></div></div>",
+      "baseCss": "#table{display:flex;align-items:center;gap:14px;padding:16px;background:#d8c9a3}.item{display:inline-block}[data-code=\"1\"]{width:48px;height:48px;background:#fff;border-radius:50%;box-shadow:inset 0 0 0 4px #cbb994}[data-code=\"1\"][data-scale=\"60\"]{width:28px;height:28px}[data-code=\"3\"]{width:32px;height:40px;background:#8ecae6;border-radius:4px}[data-code=\"3\"][data-scale=\"60\"]{width:20px;height:26px}"
+    },
+    "codeTemplate": "",
+    "systemPrompt": "Ты возвращаешь только CSS-селектор, одной строкой, без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "select-small-plates",
+          "kind": "selectorMatches",
+          "expectedIds": ["p2", "p4"],
+          "description": "Выбраны только маленькие тарелки"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "sel-03-nth",
+    "order": 9,
+    "category": "selector",
+    "title": "Выбери через один",
+    "goal": "В списке семь пунктов, один из них выделен цветом. Выбери через один, начиная со второго пункта, по порядку номеров в списке — а не по выделению.",
+    "hint": "Подсказка: ориентируйся на порядковый номер пункта в списке, а не на его оформление — выделенный пункт может не совпадать с нужной закономерностью.",
+    "difficulty": 2,
+    "injectionMode": "selector",
+    "scene": {
+      "html": "<ul id=\"list\"><li id=\"li-1\">1</li><li id=\"li-2\">2</li><li id=\"li-3\">3</li><li id=\"li-4\">4</li><li id=\"li-5\">5</li><li id=\"li-6\">6</li><li id=\"li-7\" class=\"featured\">7</li></ul>",
+      "baseCss": "#list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}#list li{background:#2f8f4e;color:#fff;padding:8px;border-radius:4px;width:120px;text-align:center}#list li.featured{background:#c9a227;color:#1b1b1b}"
+    },
+    "codeTemplate": "",
+    "systemPrompt": "Ты возвращаешь только CSS-селектор, одной строкой, без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "select-even",
+          "kind": "selectorMatches",
+          "expectedIds": ["li-2", "li-4", "li-6"],
+          "description": "Выбран каждый второй пункт списка"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "js-01-sum",
+    "order": 10,
+    "category": "js",
+    "title": "Посчитай сумму",
+    "goal": "В блоке #output должна появиться сумма всех чисел, показанных на сцене.",
+    "hint": "Опиши, что нужно сложить показанные числа и вывести результат в отведённое место.",
+    "difficulty": 2,
+    "injectionMode": "script",
+    "scene": {
+      "html": "<div id=\"numbers\"><span class=\"num\" data-value=\"4\">4</span><span class=\"num\" data-value=\"12\">12</span><span class=\"num\" data-value=\"26\">26</span></div><div id=\"output\"></div>",
+      "baseCss": "#numbers{display:flex;gap:10px;margin-bottom:16px}#numbers .num{background:#2f4f8f;color:#fff;padding:10px 14px;border-radius:6px;font-size:20px}#output{font-size:28px;font-weight:bold;color:#1b3a4b;min-height:36px}"
+    },
+    "codeTemplate": "// впишите JS-код\n",
+    "systemPrompt": "Ты возвращаешь только тело JavaScript-функции, без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "sum-output",
+          "kind": "textContent",
+          "subject": "#output",
+          "expected": "42",
+          "description": "Сумма выведена в #output"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "js-02-class",
+    "order": 11,
+    "category": "js",
+    "title": "Отметь крупные значения",
+    "goal": "Элементы с большим значением должны визуально выделиться цветом среди остальных, обычные элементы должны остаться как есть.",
+    "hint": "Подсказка: опиши, по какому числовому порогу отличаются подходящие элементы и что именно должно измениться в их внешнем виде — конкретный технический приём подберёт исполнитель.",
+    "difficulty": 2,
+    "injectionMode": "script",
+    "scene": {
+      "html": "<div id=\"list\"><div class=\"item\" id=\"item-1\" data-value=\"5\">5</div><div class=\"item\" id=\"item-2\" data-value=\"15\">15</div><div class=\"item\" id=\"item-3\" data-value=\"8\">8</div><div class=\"item\" id=\"item-4\" data-value=\"20\">20</div><div class=\"item\" id=\"item-5\" data-value=\"11\">11</div></div>",
+      "baseCss": "#list{display:flex;gap:10px}#list .item{background:#888;color:#fff;padding:10px 14px;border-radius:6px;font-size:18px}#list .item.active{background:#2f8f4e}"
+    },
+    "codeTemplate": "// впишите JS-код\n",
+    "systemPrompt": "Ты возвращаешь только тело JavaScript-функции, без пояснений и без markdown. Технический контракт сцены: элементы, которые нужно визуально выделить, помечаются добавлением CSS-класса active — он уже определён в стилях сцены и задаёт нужный цвет.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "mark-active",
+          "kind": "classOnElements",
+          "selector": ".item",
+          "className": "active",
+          "expectedIds": ["item-2", "item-4", "item-5"],
+          "description": "Класс active проставлен только у элементов со значением больше 10"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "js-03-build",
+    "order": 12,
+    "category": "js",
+    "title": "Построй список",
+    "goal": "Внутри #list должен появиться пункт <li> для каждой записи, показанной на сцене, в том же порядке.",
+    "hint": "Опиши, что нужно построить список на основе показанных записей, сохранив их порядок.",
+    "difficulty": 3,
+    "injectionMode": "script",
+    "scene": {
+      "html": "<div id=\"data\"><span class=\"entry\">Alpha</span><span class=\"entry\">Beta</span><span class=\"entry\">Gamma</span><span class=\"entry\">Delta</span></div><ul id=\"list\"></ul>",
+      "baseCss": "#data{display:flex;gap:10px;margin-bottom:16px}#data .entry{background:#2f4f8f;color:#fff;padding:8px 12px;border-radius:6px}#list{list-style:disc;padding-left:24px}"
+    },
+    "codeTemplate": "// впишите JS-код\n",
+    "systemPrompt": "Ты возвращаешь только тело JavaScript-функции, без пояснений и без markdown.",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "count-4",
+          "kind": "elementCount",
+          "selector": "#list li",
+          "expected": 4,
+          "description": "В списке 4 элемента"
+        },
+        {
+          "id": "item-1",
+          "kind": "textContent",
+          "subject": "#list li:nth-child(1)",
+          "expected": "Alpha",
+          "description": "Первый пункт — Alpha"
+        },
+        {
+          "id": "item-2",
+          "kind": "textContent",
+          "subject": "#list li:nth-child(2)",
+          "expected": "Beta",
+          "description": "Второй пункт — Beta"
+        },
+        {
+          "id": "item-3",
+          "kind": "textContent",
+          "subject": "#list li:nth-child(3)",
+          "expected": "Gamma",
+          "description": "Третий пункт — Gamma"
+        },
+        {
+          "id": "item-4",
+          "kind": "textContent",
+          "subject": "#list li:nth-child(4)",
+          "expected": "Delta",
+          "description": "Четвёртый пункт — Delta"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  }
+]
