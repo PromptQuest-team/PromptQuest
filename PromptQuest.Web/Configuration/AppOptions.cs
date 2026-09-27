@@ -6,6 +6,7 @@ public sealed class AppOptions
 
     public bool ManualCodeEntry { get; set; } = true;
     public string LevelsFilePath { get; set; } = "Data/levels.json";
+    public string GeminiModel { get; set; } = "gemini-3.1-flash-lite";
     public int MaxPromptLength { get; set; } = 2000;
     public int MaxCodeLength { get; set; } = 8000;
     public int DefaultTolerancePx { get; set; } = 8;
