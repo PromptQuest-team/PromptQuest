@@ -14,7 +14,7 @@ builder.Services.AddSingleton<IPlayerStore>(sp => sp.GetRequiredService<InMemory
 builder.Services.AddSingleton<IAttemptStore, InMemoryAttemptStore>();
 builder.Services.AddSingleton<ILevelStore, JsonLevelStore>();
 builder.Services.AddSingleton<ILeaderboardService, InMemoryLeaderboardService>();
-builder.Services.AddSingleton<ICodeGenerationService, ManualCodeGenerationService>();
+builder.Services.AddSingleton<ICodeGenerationService, AiAgent>();
 
 builder.Services.AddProblemDetails();
 

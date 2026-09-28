@@ -3,10 +3,12 @@ using Google.GenAI.Types;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PromptQuest.Web.Configuration;
+using PromptQuest.Web.Models;
+using PromptQuest.Web.Services;
 
 namespace PromptQuest.Web.AI
 {
-    public class AiAgent
+    public class AiAgent : ICodeGenerationService
     {
         private readonly Client _client;
         private readonly IConfiguration _config;
@@ -21,6 +23,11 @@ namespace PromptQuest.Web.AI
             _client = client;
             _config = config;
             _logger = logger;
+        }
+
+        public async Task<CodeGenerationResult> GenerateAsync(LevelDefinition level, string prompt, CancellationToken ct = default)
+        {
+            return new CodeGenerationResult(true, await AskAsync(prompt), false, CodeSource.Ai, null);
         }
 
         public async Task<string> AskAsync(string input, CancellationToken ct = default)
@@ -67,6 +74,8 @@ namespace PromptQuest.Web.AI
                     "Не удалось получить ответ от AI. Попробуйте позже.", ex);
             }
         }
+
+        
     }
 
 }
