@@ -1,7 +1,7 @@
 using PromptQuest.Web.Dtos;
 using PromptQuest.Web.Models;
 
-namespace PromptQuest.Web.Services;
+namespace PromptQuest.Web.Services.Storage.InMemory;
 
 public sealed class InMemoryLeaderboardService : ILeaderboardService
 {
