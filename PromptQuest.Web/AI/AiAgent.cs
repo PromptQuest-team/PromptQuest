@@ -15,8 +15,23 @@ namespace PromptQuest.Web.AI
         private readonly ILogger<AiAgent> _logger;
 
         private const string SystemPrompt =
-            "Ты — ассистент в игровом проекте PromptQuest. " +
-            "Отвечай кратко, по делу, на русском языке.";
+            "Ты — ассистент в игровом проекте PromptQuest.\n" +
+            "Это игра-головоломка: игрок пишет команды на естественном языке, " +
+            "а ты превращаешь их в CSS для контейнера #pond.\n" +
+            "Внутри #pond находятся лягушки (Frog) и лилии (Lily). " +
+            "Управляя свойствами контейнера #pond, ты перемещаешь лягушек на сказанное место.\n\n" +
+            "ПРАВИЛА (обязательны к соблюдению):\n" +
+            "1. Меняй ТОЛЬКО контейнер #pond. Селекторы Frog и Lily не трогай. Исключение если есть grid.\n" +
+            "3. Верни ИСКЛЮЧИТЕЛЬНО CSS-код ровно в таком формате:\n" +
+            "   #pond { свойство: значение; свойство: значение; }\n" +
+            "4. НЕ добавляй markdown-обёртки ``` или ```css, комментарии, пояснения, " +
+            "приветствия, вопросы, текст до или после блока.\n" +
+            "5. Ответ обязан начинаться с '#pond' и заканчиваться символом '}'.\n" +
+            "6. Если команда игрока невыполнима — верни текущий CSS без изменений.\n\n" +
+            "7. Каждый запрос перечитывай CSS присланного уровня. Не пытайся запомнить предыдущие данные"+
+            "ТЕКУЩИЙ CSS ОБЪЕКТА #pond:\n" +
+            "{CURRENT_CSS}\n\n" +
+            "Примени команду игрока к текущему CSS и верни новый полный блок #pond { ... }.";
 
         public AiAgent(Client client, IConfiguration config, ILogger<AiAgent> logger)
         {
@@ -27,7 +42,15 @@ namespace PromptQuest.Web.AI
 
         public async Task<CodeGenerationResult> GenerateAsync(LevelDefinition level, string prompt, CancellationToken ct = default)
         {
-            return new CodeGenerationResult(true, await AskAsync(prompt), false, CodeSource.Ai, null);
+            try
+            {
+                return new CodeGenerationResult(true, await AskAsync(prompt), false, CodeSource.Ai, null);
+            }
+            catch (InvalidOperationException)
+            {
+                return new CodeGenerationResult(true, "Не удалось получить ответ из ИИ. Возможно сервер сейчас перегружен.\n Попробуйте позже.", false, CodeSource.Ai, "Не удалось получить ответ из ИИ. Возможно сервер сейчас перегружен.\n Попробуйте позже.");
+            }
+            
         }
 
         public async Task<string> AskAsync(string input, CancellationToken ct = default)

@@ -4,7 +4,7 @@ public sealed class AppOptions
 {
     public const string SectionName = "PromptQuest";
 
-    public bool ManualCodeEntry { get; set; } = true;
+    public bool ManualCodeEntry { get; set; } = false;
     public string LevelsFilePath { get; set; } = "Data/levels.json";
     public string GeminiModel { get; set; } = "gemini-3.1-flash-lite";
     public int MaxPromptLength { get; set; } = 2000;
