@@ -31,11 +31,6 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapGet("/test-gemini", async (AiAgent agent) =>
-{
-    var result = await agent.AskAsync("Привет! Распиши почему плохо интегрировать AI Агент в проекты.");
-    return Results.Ok(new { result });
-});
 
 app.MapPlayerEndpoints();
 app.MapLevelEndpoints();
