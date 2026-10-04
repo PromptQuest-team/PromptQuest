@@ -9,11 +9,21 @@ public sealed class EfLeaderboardService : ILeaderboardService
 {
     private readonly AppDbContext _db;
 
+    /// <summary>Initializes the leaderboard service using the supplied database context.</summary>
     public EfLeaderboardService(AppDbContext db)
     {
         _db = db;
     }
 
+    /// <summary>Ranks players who completed the level using their stored best results.</summary>
+    /// <param name="levelId">The level whose completed progress is ranked.</param>
+    /// <param name="take">Maximum entries; zero or negative values return an empty list without querying the database.</param>
+    /// <param name="ct">Cancels the database query when one is needed.</param>
+    /// <returns>
+    /// Entries with sequential ranks starting at 1, ordered by score descending, time in milliseconds
+    /// ascending, then nickname ascending. Returns an empty list when no completed progress matches.
+    /// </returns>
+    /// <remarks>Database and cancellation errors from the query propagate to the caller.</remarks>
     public async Task<IReadOnlyList<LeaderboardEntryDto>> GetForLevelAsync(
         string levelId, int take, CancellationToken ct = default)
     {
@@ -42,6 +52,14 @@ public sealed class EfLeaderboardService : ILeaderboardService
             .ToList();
     }
 
+    /// <summary>Ranks players with completed levels by summing their best attempts, times, and scores across those levels.</summary>
+    /// <param name="take">Maximum entries; zero or negative values return an empty list without querying the database.</param>
+    /// <param name="ct">Cancels the database query when one is needed.</param>
+    /// <returns>
+    /// Entries with sequential ranks starting at 1, ordered by total score descending, total time in
+    /// milliseconds ascending, then nickname ascending. Returns an empty list when no player has completed a level.
+    /// </returns>
+    /// <remarks>Database and cancellation errors from the query propagate to the caller.</remarks>
     public async Task<IReadOnlyList<LeaderboardEntryDto>> GetGlobalAsync(
         int take, CancellationToken ct = default)
     {

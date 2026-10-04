@@ -5,12 +5,17 @@ namespace PromptQuest.Web.Services.Storage.Db;
 
 public sealed class AppDbContext : DbContext
 {
+    /// <summary>Initializes the game data context with the supplied database options.</summary>
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<Player> Players => Set<Player>();
     public DbSet<LevelProgress> LevelProgresses => Set<LevelProgress>();
     public DbSet<Attempt> Attempts => Set<Attempt>();
 
+    /// <summary>
+    /// Configures application-assigned keys, required fields, length limits, and indexes,
+    /// including unique progress per player and level and cascading deletion of a player's progress and attempts.
+    /// </summary>
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.Entity<Player>(e =>
