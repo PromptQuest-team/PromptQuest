@@ -1,6 +1,6 @@
 using PromptQuest.Web.Models;
 
-namespace PromptQuest.Web.Services;
+namespace PromptQuest.Web.Services.Storage;
 
 public interface ILevelStore
 {

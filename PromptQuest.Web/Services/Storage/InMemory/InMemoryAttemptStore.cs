@@ -1,7 +1,8 @@
 using System.Collections.Concurrent;
 using PromptQuest.Web.Models;
+using PromptQuest.Web.Services.Storage;
 
-namespace PromptQuest.Web.Services;
+namespace PromptQuest.Web.Services.Storage.InMemory;
 
 public sealed class InMemoryAttemptStore : IAttemptStore
 {
