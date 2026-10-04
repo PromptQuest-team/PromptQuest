@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using PromptQuest.Web.Configuration;
 using PromptQuest.Web.Models;
+using PromptQuest.Web.Services.Storage;
 
 namespace PromptQuest.Web.Services;
 

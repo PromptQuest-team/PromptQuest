@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using PromptQuest.Web.Models;
+using PromptQuest.Web.Services.Storage;
 
-namespace PromptQuest.Web.Services;
+namespace PromptQuest.Web.Services.Storage.InMemory;
 
 public sealed class InMemoryPlayerStore : IPlayerStore
 {
