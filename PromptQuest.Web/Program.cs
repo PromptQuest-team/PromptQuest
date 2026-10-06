@@ -72,11 +72,6 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapGet("/test-gemini", async (AiAgent agent) =>
-{
-    var result = await agent.AskAsync("������! ������� ������ ����� ������������� AI ����� � �������.");
-    return Results.Ok(new { result });
-});
 
 app.MapPlayerEndpoints();
 app.MapLevelEndpoints();
