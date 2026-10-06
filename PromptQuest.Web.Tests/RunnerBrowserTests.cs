@@ -44,7 +44,7 @@ public sealed class RunnerBrowserTests : IClassFixture<RunnerBrowserFixture>, IA
         ["css-05-spread"] = "#pond{justify-content:space-between}",
         ["css-06-grid"] = "#frog{grid-column:3;grid-row:3}",
         ["css-07-two-spots"] = "#frog-a{left:372px;top:32px}#frog-b{left:52px;top:172px}",
-        ["css-08-big-lily"] = "#frog{grid-column:1 / span 2;grid-row:1 / span 2}",
+        ["css-08-big-lily"] = "#frog-1{grid-column:1;grid-row:1}#frog-2{grid-column:2;grid-row:1}",
         ["css-09-two-ponds"] = "#frog-a{grid-column:2;grid-row:2}#frog-b{grid-column:2;grid-row:2}",
         ["css-10-four-colors"] =
             "#frog-yellow{grid-column:1;grid-row:1}#frog-green{grid-column:2;grid-row:1}#frog-red{grid-column:1;grid-row:2}#frog-blue{grid-column:2;grid-row:2}",
@@ -250,7 +250,7 @@ public sealed class RunnerBrowserTests : IClassFixture<RunnerBrowserFixture>, IA
             ["css-05-spread"] = ("#frog-1", "#lily-1"),
             ["css-06-grid"] = ("#frog", "#cell-9"),
             ["css-07-two-spots"] = ("#frog-a", "#lily-a"),
-            ["css-08-big-lily"] = ("#frog", "#lily-zone"),
+            ["css-08-big-lily"] = ("#frog-1", "#lily-zone"),
             ["css-09-two-ponds"] = ("#frog-a", "#cell-a4"),
             ["css-10-four-colors"] = ("#frog-yellow", "#cell-1"),
         };

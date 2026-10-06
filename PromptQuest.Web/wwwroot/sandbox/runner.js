@@ -81,6 +81,28 @@ const CHECKS = {
     };
   },
 
+  noOverlap(check, ctx) {
+    const subject = q(ctx.sceneRoot, check.subject);
+    const target = q(ctx.sceneRoot, check.target);
+    if (!subject || !target) {
+      return failResult(check, "оба элемента найдены", "один из элементов отсутствует на сцене");
+    }
+
+    const s = subject.getBoundingClientRect();
+    const t = target.getBoundingClientRect();
+    const intersects = s.left < t.right && s.right > t.left && s.top < t.bottom && s.bottom > t.top;
+
+    return {
+      id: check.id,
+      passed: !intersects,
+      description: check.description || check.id,
+      expected: "прямоугольники не пересекаются",
+      actual: intersects
+        ? `пересекаются: ${fmtRect(s)} и ${fmtRect(t)}`
+        : `не пересекаются: ${fmtRect(s)} и ${fmtRect(t)}`,
+    };
+  },
+
   orderX(check, ctx) {
     return orderCheck(check, ctx, "x");
   },
