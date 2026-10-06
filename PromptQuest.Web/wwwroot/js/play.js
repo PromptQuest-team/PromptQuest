@@ -1,6 +1,5 @@
 import { Api } from "./api.js";
 import { State } from "./state.js";
-import { LevelTimer, formatMs } from "./timer.js";
 import { runInSandbox, showResetScene } from "./sandbox.js";
 
 function escapeHtml(value) {
@@ -37,15 +36,13 @@ export const PlayScreen = {
       <section class="screen screen-play">
         <div class="play-topbar">
           <span>Уровень ${levelIndex} / ${levelCount}</span>
-          <span>Время <span id="play-timer">00:00</span></span>
-          <span>Попыток: <span id="play-attempts">0</span></span>
         </div>
         <div class="play-columns">
           <div class="play-left">
             <h3>Цель</h3>
             <p id="play-goal">${escapeHtml(level.goal)}</p>
             <div id="scene-container" class="scene-container"></div>
-            <p class="hint">Подсказка: ${escapeHtml(level.hint)}</p>
+            <p class="hint">${escapeHtml(level.hint)}</p>
             <button type="button" id="reset-button" class="secondary-button">Сбросить уровень</button>
           </div>
           <div class="play-right">
@@ -53,6 +50,7 @@ export const PlayScreen = {
             <textarea id="prompt-input" rows="4" placeholder="Опишите результат, который должен получиться…" ${
               manualEntry ? "disabled" : ""
             }></textarea>
+            <p class="char-counter">Длина промта: <span id="prompt-char-count">0</span> символов</p>
             ${manualEntry ? '<p class="mode-note">В этом режиме промт не оценивается — впишите код вручную ниже.</p>' : ""}
             <button type="button" id="submit-prompt-button" class="primary-button" ${manualEntry ? "hidden" : ""}>
               Отправить промт
@@ -77,9 +75,8 @@ export const PlayScreen = {
     `;
 
     const sceneContainer = container.querySelector("#scene-container");
-    const timerEl = container.querySelector("#play-timer");
-    const attemptsEl = container.querySelector("#play-attempts");
     const promptInput = container.querySelector("#prompt-input");
+    const promptCharCount = container.querySelector("#prompt-char-count");
     const submitPromptButton = container.querySelector("#submit-prompt-button");
     const codeInput = container.querySelector("#code-input");
     const runButton = container.querySelector("#run-button");
@@ -88,15 +85,14 @@ export const PlayScreen = {
     const victoryPanel = container.querySelector("#victory-panel");
     const resetButton = container.querySelector("#reset-button");
 
-    const timer = new LevelTimer();
-    timer.start();
-
-    let attemptCount = 0;
     let passed = false;
 
-    const tickInterval = setInterval(() => {
-      timerEl.textContent = formatMs(timer.elapsedMs());
-    }, 250);
+    function updateCharCount() {
+      promptCharCount.textContent = String(promptInput.value.trim().length);
+    }
+
+    promptInput.addEventListener("input", updateCharCount);
+    updateCharCount();
 
     function showHint(text) {
       hintEl.textContent = text;
@@ -105,6 +101,17 @@ export const PlayScreen = {
 
     function clearHint() {
       hintEl.hidden = true;
+    }
+
+    function describeAttemptError(err) {
+      if (err && err.status === 429) {
+        const seconds = err.retryAfterSeconds || 60;
+        return `Слишком часто, подождите ${seconds} секунд.`;
+      }
+      if (err && err.status === 502) {
+        return "ИИ временно недоступен, попробуйте ещё раз.";
+      }
+      return (err && err.message) || "Не удалось зарегистрировать попытку.";
     }
 
     function renderChecks(checks) {
@@ -131,9 +138,9 @@ export const PlayScreen = {
       victoryPanel.hidden = false;
       victoryPanel.innerHTML = `
         <h3>Уровень пройден!</h3>
-        <p>Попыток: ${result.attempts}</p>
-        <p>Время: ${formatMs(timer.elapsedMs())}</p>
-        <p>Очки: ${result.score}${result.personalBest ? " — новый личный рекорд!" : ""}</p>
+        <p>Решено промтом из ${result.promptLength} символов${
+          result.personalBest ? " (новый личный рекорд!)" : ""
+        }</p>
         <div class="victory-actions">
           ${
             result.nextLevelId
@@ -146,9 +153,6 @@ export const PlayScreen = {
     }
 
     async function runAttempt(attemptId, code) {
-      attemptCount += 1;
-      attemptsEl.textContent = String(attemptCount);
-
       const runResult = await runInSandbox(sceneContainer, level, code);
       renderChecks(runResult.checks);
 
@@ -164,15 +168,11 @@ export const PlayScreen = {
 
       if (runResult.passed) {
         passed = true;
-        timer.stop();
       }
-
-      const elapsedMs = timer.elapsedMs();
 
       try {
         const result = await Api.submitResult(attemptId, {
           passed: runResult.passed,
-          elapsedMs,
           code,
           checks: runResult.checks.map((c) => ({ id: c.id, passed: c.passed })),
         });
@@ -203,7 +203,7 @@ export const PlayScreen = {
         const attempt = await Api.createAttempt(playerId, levelId, promptInput.value.trim());
         await runAttempt(attempt.attemptId, code);
       } catch (err) {
-        showHint(err.message || "Не удалось зарегистрировать попытку.");
+        showHint(describeAttemptError(err));
       } finally {
         runButton.disabled = false;
       }
@@ -223,7 +223,9 @@ export const PlayScreen = {
         codeInput.value = attempt.code;
         await runAttempt(attempt.attemptId, attempt.code);
       } catch (err) {
-        showHint(err.message || "Не удалось получить код.");
+        // 429 (лимит запросов) и 502 (сбой ИИ) — попытка на сервере не создана,
+        // валидатор не запускаем, просто показываем сообщение.
+        showHint(describeAttemptError(err));
       } finally {
         submitPromptButton.disabled = false;
       }
@@ -231,10 +233,6 @@ export const PlayScreen = {
 
     resetButton.addEventListener("click", async () => {
       passed = false;
-      attemptCount = 0;
-      attemptsEl.textContent = "0";
-      timer.start();
-      timerEl.textContent = formatMs(0);
       checksList.innerHTML = "";
       victoryPanel.hidden = true;
       victoryPanel.innerHTML = "";
@@ -245,9 +243,6 @@ export const PlayScreen = {
 
     await showResetScene(sceneContainer, level);
 
-    return () => {
-      clearInterval(tickInterval);
-      timer.dispose();
-    };
+    return null;
   },
 };

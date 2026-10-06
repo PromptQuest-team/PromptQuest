@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PromptQuest.Web", "PromptQuest.Web\PromptQuest.Web.csproj", "{0E6D16D7-5257-41C5-B45B-BC42336C9A93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PromptQuest.Web.Tests", "PromptQuest.Web.Tests\PromptQuest.Web.Tests.csproj", "{1CDC9A93-49C4-4A6C-9EBF-1F5133EFF2A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0E6D16D7-5257-41C5-B45B-BC42336C9A93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E6D16D7-5257-41C5-B45B-BC42336C9A93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E6D16D7-5257-41C5-B45B-BC42336C9A93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CDC9A93-49C4-4A6C-9EBF-1F5133EFF2A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CDC9A93-49C4-4A6C-9EBF-1F5133EFF2A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CDC9A93-49C4-4A6C-9EBF-1F5133EFF2A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CDC9A93-49C4-4A6C-9EBF-1F5133EFF2A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

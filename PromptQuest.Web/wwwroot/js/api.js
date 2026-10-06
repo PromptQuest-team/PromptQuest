@@ -17,7 +17,14 @@ async function request(method, path, body) {
     } catch {
       // тело ответа не в формате ProblemDetails — используем сообщение по умолчанию
     }
-    throw new Error(detail);
+
+    const error = new Error(detail);
+    error.status = res.status;
+    if (res.status === 429) {
+      const retryAfter = Number(res.headers.get("Retry-After"));
+      error.retryAfterSeconds = Number.isFinite(retryAfter) ? retryAfter : null;
+    }
+    throw error;
   }
 
   if (res.status === 204) {
@@ -51,8 +58,5 @@ export const Api = {
       "GET",
       `/leaderboard/levels/${encodeURIComponent(levelId)}?take=${take}`
     );
-  },
-  getGlobalLeaderboard(take) {
-    return request("GET", `/leaderboard/global?take=${take}`);
   },
 };

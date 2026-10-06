@@ -23,9 +23,7 @@ public static class LevelEndpoints
             foreach (var level in levels)
             {
                 var completed = false;
-                var bestAttempts = 0;
-                var bestTimeMs = 0;
-                var bestScore = 0;
+                var bestPromptLength = 0;
 
                 if (playerId.HasValue)
                 {
@@ -33,9 +31,7 @@ public static class LevelEndpoints
                     if (progress is not null)
                     {
                         completed = progress.Completed;
-                        bestAttempts = progress.BestAttempts;
-                        bestTimeMs = progress.BestTimeMs;
-                        bestScore = progress.BestScore;
+                        bestPromptLength = progress.BestPromptLength;
                     }
                 }
 
@@ -46,9 +42,7 @@ public static class LevelEndpoints
                     level.Title,
                     level.Difficulty,
                     completed,
-                    bestAttempts,
-                    bestTimeMs,
-                    bestScore,
+                    bestPromptLength,
                     manualEntry));
             }
 

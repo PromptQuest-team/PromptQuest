@@ -1,61 +1,29 @@
 using Google.GenAI;
-using PromptQuest.Web.AI;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
+using PromptQuest.Web.AI;
 using PromptQuest.Web.Configuration;
 using PromptQuest.Web.Endpoints;
 using PromptQuest.Web.Services;
 using PromptQuest.Web.Services.Storage;
 using PromptQuest.Web.Services.Storage.Db;
-using PromptQuest.Web.Services.Storage.InMemory;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<AppOptions>(
     builder.Configuration.GetSection(AppOptions.SectionName));
 
-if (builder.Environment.IsDevelopment()
-    && builder.Configuration.GetValue<bool>("PromptQuest:UseInMemoryStorage"))
-{
-    builder.Services.AddSingleton<InMemoryPlayerStore>();
-    builder.Services.AddSingleton<IPlayerStore>(sp => sp.GetRequiredService<InMemoryPlayerStore>());
-    builder.Services.AddSingleton<IAttemptStore, InMemoryAttemptStore>();
-    builder.Services.AddSingleton<ILeaderboardService, InMemoryLeaderboardService>();
-}
-else
-{
-    var connectionString = builder.Configuration.GetConnectionString("Default");
-    const string connectionError = "Connection string 'Default' must provide non-empty Host, Database and Username. "
-        + "Configure ConnectionStrings__Default before starting the application.";
+// Temporary: Development defaults to in-memory storage (no shared dev DB
+// exists yet). Every other environment, and Development with
+// PromptQuest:UseInMemoryStorage explicitly set to false, always requires
+// PostgreSQL via ConnectionStrings:Default.
+var useInMemoryStorage = builder.Environment.IsDevelopment()
+    && builder.Configuration.GetValue<bool>("PromptQuest:UseInMemoryStorage");
 
-    if (string.IsNullOrWhiteSpace(connectionString))
-        throw new InvalidOperationException(connectionError);
-
-    NpgsqlConnectionStringBuilder connection;
-    try
-    {
-        connection = new NpgsqlConnectionStringBuilder(connectionString);
-    }
-    catch (ArgumentException)
-    {
-        // Do not include the connection string or parser exception: they may contain credentials.
-        throw new InvalidOperationException(connectionError);
-    }
-
-    if (string.IsNullOrWhiteSpace(connection.Host)
-        || string.IsNullOrWhiteSpace(connection.Database)
-        || string.IsNullOrWhiteSpace(connection.Username))
-        throw new InvalidOperationException(connectionError);
-
-    builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connectionString));
-    builder.Services.AddScoped<IPlayerStore, EfPlayerStore>();
-    builder.Services.AddScoped<IAttemptStore, EfAttemptStore>();
-    builder.Services.AddScoped<ILeaderboardService, EfLeaderboardService>();
-}
+builder.Services.AddStorage(useInMemoryStorage, builder.Configuration.GetConnectionString("Default"));
 
 builder.Services.AddSingleton<ILevelStore, JsonLevelStore>();
-builder.Services.AddSingleton<ILeaderboardService, InMemoryLeaderboardService>();
 builder.Services.AddSingleton<ICodeGenerationService, AiAgent>();
+builder.Services.AddSingleton<AiRateLimiter>();
 
 builder.Services.AddProblemDetails();
 
@@ -65,17 +33,36 @@ builder.Services.AddSingleton(sp =>
     return new Client(apiKey: apiKey);
 });
 
-builder.Services.AddScoped<AiAgent>();
-
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
-
-app.MapGet("/test-gemini", async (AiAgent agent) =>
+// Development has no separate deployment step to run migrations, so the
+// schema is created/updated automatically on startup - but only when a real
+// database is actually in use; AppDbContext isn't registered at all in the
+// in-memory branch, so this must stay conditional on useInMemoryStorage, not
+// just on the environment. Production/Staging are expected to apply
+// migrations as part of their own deployment process.
+if (app.Environment.IsDevelopment() && !useInMemoryStorage)
 {
-    var result = await agent.AskAsync("������! ������� ������ ����� ������������� AI ����� � �������.");
-    return Results.Ok(new { result });
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+}
+
+app.UseDefaultFiles();
+// Without this, a browser can keep serving a cached copy of a static file
+// (runner.html/runner.js in particular - each sandbox run re-requests them
+// via a fresh iframe navigation, a real HTTP request, not an ES-module
+// import) indefinitely without ever checking the server again, so an actual
+// server-side fix can look like it "didn't happen" in a browser that already
+// has an old copy cached. no-cache forces revalidation (a cheap conditional
+// GET with ETag/Last-Modified) on every request instead of trusting a
+// previous cached copy, so a real change is always picked up on the very
+// next request, in any browser.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "no-cache";
+    },
 });
 
 app.MapPlayerEndpoints();
@@ -84,3 +71,7 @@ app.MapAttemptEndpoints();
 app.MapLeaderboardEndpoints();
 
 app.Run();
+
+// Делает неявный класс Program из top-level statements доступным для
+// WebApplicationFactory<Program> в тестовом проекте. Поведения не меняет.
+public partial class Program { }

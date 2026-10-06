@@ -12,4 +12,6 @@ public sealed class AppOptions
     public int DefaultTolerancePx { get; set; } = 8;
     public int DefaultTimeoutMs { get; set; } = 2000;
     public int LeaderboardTake { get; set; } = 20;
+    public int AiRequestTimeoutMs { get; set; } = 10000;
+    public int AiRequestsPerMinutePerPlayer { get; set; } = 10;
 }

@@ -81,6 +81,28 @@ const CHECKS = {
     };
   },
 
+  noOverlap(check, ctx) {
+    const subject = q(ctx.sceneRoot, check.subject);
+    const target = q(ctx.sceneRoot, check.target);
+    if (!subject || !target) {
+      return failResult(check, "оба элемента найдены", "один из элементов отсутствует на сцене");
+    }
+
+    const s = subject.getBoundingClientRect();
+    const t = target.getBoundingClientRect();
+    const intersects = s.left < t.right && s.right > t.left && s.top < t.bottom && s.bottom > t.top;
+
+    return {
+      id: check.id,
+      passed: !intersects,
+      description: check.description || check.id,
+      expected: "прямоугольники не пересекаются",
+      actual: intersects
+        ? `пересекаются: ${fmtRect(s)} и ${fmtRect(t)}`
+        : `не пересекаются: ${fmtRect(s)} и ${fmtRect(t)}`,
+    };
+  },
+
   orderX(check, ctx) {
     return orderCheck(check, ctx, "x");
   },
@@ -296,6 +318,36 @@ function matchesForbiddenPattern(code, patterns) {
   return null;
 }
 
+// Раннер не знает заранее размер сцены конкретного уровня (он задаётся в
+// levels.json и отличается от уровня к уровню) — родитель измеряет его здесь
+// и подгоняет размер sandbox-iframe под него (sandbox.js), вместо того чтобы
+// держать один фиксированный размер для всех уровней.
+// Меряем именно #pond, а не document.documentElement.scrollWidth/Height: html —
+// обычный block-элемент, его width:auto растягивается на всю ширину текущего
+// iframe (а не сжимается до контента), так что scrollWidth в момент, когда
+// #pond уже уже, чем предыдущий/запасной размер iframe, просто вернул бы этот
+// предыдущий размер, а не настоящую ширину сцены. #pond у каждого уровня —
+// либо с явным width (flex-уровни и все grid-уровни после правки размера
+// окна), либо сам задаёт свой размер через grid-template — его собственный
+// getBoundingClientRect() не зависит от текущего размера iframe.
+function measureSceneSize() {
+  const pond = document.getElementById("pond");
+  if (pond) {
+    const r = pond.getBoundingClientRect();
+    // Фон сцены измеряется и отдаётся родителю вместе с размером — если
+    // размер определён на долю пикселя неточно (округление/sub-pixel layout)
+    // и всё же остаётся край, он того же цвета, что и сама сцена, а не
+    // произвольного цвета iframe по умолчанию.
+    const background = getComputedStyle(pond).backgroundColor;
+    return { width: Math.ceil(r.width), height: Math.ceil(r.height), background };
+  }
+  return {
+    width: document.documentElement.scrollWidth,
+    height: document.documentElement.scrollHeight,
+    background: null,
+  };
+}
+
 async function runChecks(msg) {
   const code = msg.code || "";
 
@@ -309,6 +361,7 @@ async function runChecks(msg) {
       passed: false,
       checks: [],
       error: `Код содержит запрещённую конструкцию: ${forbiddenHit}`,
+      size: measureSceneSize(),
     };
   }
 
@@ -316,8 +369,10 @@ async function runChecks(msg) {
 
   await waitTwoFrames();
 
+  const size = measureSceneSize();
+
   if (applyError) {
-    return { passed: false, checks: [], error: applyError };
+    return { passed: false, checks: [], error: applyError, size };
   }
 
   const checks = (msg.validation && msg.validation.checks) || [];
@@ -331,17 +386,22 @@ async function runChecks(msg) {
   for (const check of checks) {
     const fn = CHECKS[check.kind];
     if (!fn) {
+      // Перечисляем известные виды в самом сообщении: если его тут нет, а в
+      // levels.json он есть — это почти всегда означает, что браузер
+      // выполняет устаревшую (закэшированную) копию этого файла, а не
+      // настоящую ошибку конфигурации уровня.
       return {
         passed: false,
         checks: results,
-        error: `Неизвестный вид проверки: ${check.kind}`,
+        error: `Неизвестный вид проверки: ${check.kind} (известные виды: ${Object.keys(CHECKS).join(", ")})`,
+        size,
       };
     }
     results.push(fn(check, ctx));
   }
 
   const passed = results.every((r) => r.passed);
-  return { passed, checks: results, error: null };
+  return { passed, checks: results, error: null, size };
 }
 
 window.addEventListener("message", (event) => {
@@ -363,6 +423,7 @@ window.addEventListener("message", (event) => {
           passed: result.passed,
           checks: result.checks,
           error: result.error,
+          size: result.size,
         },
         "*"
       );

@@ -1,45 +1,26 @@
-# PromptQuest — техническое задание, Фаза 1
+# PromptQuest — архитектура и контракты системы
 
-**Веб-приложение для обучения prompt-инжинирингу через игровые уровни.**
-Дипломная практика. Фаза 1 = MVP **без базы данных** и **без интеграции с AI API**.
+Описывает **текущую** реализацию проекта: обучающей веб-игры по
+prompt-инжинирингу. Игрок видит сцену и короткую цель, описывает нужный
+результат словами, ИИ превращает промт в CSS, код применяется к сцене в
+изолированном `iframe`, автоматический валидатор проверяет результат.
+Единственная метрика успеха — длина промта.
 
----
-
-## 0. Как пользоваться этим документом
-
-Этот файл — источник истины для реализации. Пути файлов, имена классов, имена HTTP-эндпоинтов, поля JSON и названия проверок воспроизводить **дословно**.
-
-Если требование выглядит неоднозначным — выбирай простейшую реализацию, не противоречащую разделам 3 и 18.
-Не добавляй зависимости, запрещённые в разделе 3.2.
+Дополнения, формулирующие принципы конструирования уровней и изоляции ИИ от
+подсказок игрока — `SPEC-ADDENDUM-01.md` и `SPEC-ADDENDUM-02.md`. Планы на
+будущее — раздел 15 этого документа.
 
 ---
 
-## 1. Суть продукта
-
-Обучающие веб-игры вроде **Flexbox Froggy**, **CSS Diner** и **Grid Garden** работают так: игрок пишет код → код применяется к сцене → система автоматически проверяет визуальный результат → фиксируется прогресс.
-
-PromptQuest переносит эту механику на навык prompt-инжиниринга. Игрок **не пишет код** — он пишет **промт**. Код пишет ИИ. Оценивается не знание синтаксиса, а точность постановки задачи: сколько попыток и сколько времени потребовалось.
-
-### Игровой цикл
-
-1. Игрок открывает уровень: видит сцену (что есть) и цель (что должно получиться).
-2. Пишет промт на естественном языке.
-3. Промт + системный промт уровня уходят в AI API *(в Фазе 1 — см. раздел 14)*.
-4. Возвращается код (CSS / CSS-селектор / JavaScript).
-5. Код применяется к сцене в изолированном iframe, валидатор проверяет достижение цели.
-6. Результат показывается игроку; попытка и время фиксируются.
-7. При успехе результат идёт в личную статистику и таблицу лидеров.
-
----
-
-## 2. Терминология
+## 1. Терминология
 
 | Термин | Значение |
 |---|---|
-| **Уровень (Level)** | Единица задания: сцена, цель, набор проверок, системный промт |
-| **Сцена (Scene)** | Фиксированные HTML + базовый CSS уровня |
-| **Код игрока** | Текст, применяемый к сцене: CSS-правила, CSS-селектор или JS-скрипт |
-| **Попытка (Attempt)** | Один цикл «запустить и проверить». Считается по нажатию кнопки запуска |
+| **Уровень (Level)** | Единица задания: сцена, вид сцены для ИИ, цель, набор проверок, системный промт |
+| **Сцена (Scene)** | Фиксированные HTML + базовый CSS уровня — для рендера игроку и для валидатора |
+| **Вид сцены для ИИ (AiScene)** | Урезанная версия сцены, уходящая в запрос к модели — без кувшинок и данных о положении цели |
+| **Код игрока** | CSS, применяемый к сцене; пишет его ИИ по промту игрока |
+| **Попытка (Attempt)** | Один цикл «отправить промт → получить код → проверить». Регистрируется на сервере при отправке промта |
 | **Прогон (Run)** | Выполнение кода в sandbox-iframe и получение результата проверок |
 | **Проверка (Check)** | Одно атомарное условие прохождения уровня |
 | **Раннер (Runner)** | Документ внутри sandbox-iframe: собирает сцену, применяет код, выполняет проверки |
@@ -47,98 +28,100 @@ PromptQuest переносит эту механику на навык prompt-и
 
 ---
 
-## 3. Границы Фазы 1
+## 2. Архитектура
 
-### 3.1. Реализуется
-
-- ASP.NET Core Web API (C#), он же раздаёт статику фронтенда
-- Фронтенд на HTML/CSS/чистом JavaScript (ES-модули, **без фреймворка и без сборщика**)
-- Каталог из 12 уровней из файла `Data/levels.json`
-- Полноценный движок валидации: sandbox-iframe, протокол postMessage, 9 видов проверок
-- Вход по никнейму, анонимный GUID игрока в localStorage
-- Учёт попыток и времени, расчёт очков, таблица лидеров по уровню и общая
-- Хранение данных **в памяти процесса** за интерфейсами репозиториев
-- Заглушка генерации кода за интерфейсом `ICodeGenerationService`
-- Ручной ввод кода в поле результата — для тестирования без ИИ (раздел 14)
-
-### 3.2. ЗАПРЕЩЕНО в Фазе 1
-
-> Перечисленное ниже **не добавлять ни в каком виде** — ни пакетов, ни классов, ни конфигурации, ни закомментированного кода «на будущее», кроме интерфейсов из раздела 4.4.
-
-- Entity Framework Core, SQL Server, любые NuGet-пакеты для БД, строки подключения, миграции, `.sql` файлы
-- Любые HTTP-вызовы к внешним AI-провайдерам, SDK провайдеров, ключи API, переменные окружения с ключами
-- Аутентификация, пароли, JWT, OAuth, cookie-сессии сервера, ASP.NET Identity
-- Docker, серверные песочницы выполнения кода, компиляция кода на сервере
-- Фронтенд-фреймворки (React, Vue, Angular, Blazor), сборщики (webpack, vite), npm-зависимости
-- Логика, завязанная на конкретного AI-провайдера, в эндпоинтах или на фронтенде
-
-### 3.3. Почему так
-
-Обе исключённые подсистемы спрятаны за интерфейсами (раздел 4.4), поэтому их добавление в Фазе 2 сводится к написанию новых реализаций и одной строки регистрации в DI. Приложение при этом уже полностью играбельно и тестируемо.
-
----
-
-## 4. Архитектура
-
-### 4.1. Общая схема
+### 2.1. Общая схема
 
 ```
 Браузер                                    Сервер (ASP.NET Core)
-┌──────────────────────────────┐            ┌────────────────────────────┐
-│ UI (index.html + js-модули)  │  REST/JSON │ Endpoints (Minimal API)    │
-│   ├─ ввод никнейма           │◄──────────►│   /api/players             │
-│   ├─ выбор уровня            │            │   /api/levels              │
-│   ├─ экран игры              │            │   /api/attempts            │
-│   └─ таблица лидеров         │            │   /api/leaderboard         │
-│            │                 │            │            │               │
-│            │ postMessage     │            │            ▼               │
-│            ▼                 │            │ Services                   │
-│ ┌──────────────────────────┐ │            │   ILevelStore   (json)     │
-│ │ sandbox <iframe>         │ │            │   IPlayerStore  (memory)   │
-│ │  runner.html + runner.js │ │            │   IAttemptStore (memory)   │
-│ │  сцена + код + проверки  │ │            │   ILeaderboardService      │
-│ └──────────────────────────┘ │            │   ICodeGenerationService   │
-└──────────────────────────────┘            └────────────────────────────┘
+┌──────────────────────────────┐            ┌─────────────────────────────┐
+│ UI (index.html + js-модули)  │  REST/JSON │ Endpoints (Minimal API)     │
+│   ├─ ввод никнейма           │◄──────────►│   /api/players              │
+│   ├─ выбор уровня            │            │   /api/levels               │
+│   ├─ экран игры               │            │   /api/attempts             │
+│   └─ таблица лидеров         │            │   /api/leaderboard/levels   │
+│            │                 │            │            │                │
+│            │ postMessage     │            │            ▼                │
+│            ▼                 │            │ Services                    │
+│ ┌──────────────────────────┐ │            │   ILevelStore   (json)      │
+│ │ sandbox <iframe>         │ │            │   IPlayerStore  (EF/mem)    │
+│ │  runner.html + runner.js │ │            │   IAttemptStore (EF/mem)    │
+│ │  сцена + код + проверки  │ │            │   ILeaderboardService       │
+│ └──────────────────────────┘ │            │   AiRateLimiter (per player)│
+└──────────────────────────────┘            │   ICodeGenerationService    │
+                                             │     (AiAgent → Gemini)      │
+                                             └─────────────────────────────┘
 ```
 
-### 4.2. Точки расширения
+### 2.2. Стек
 
-| Интерфейс | Фаза 1 | Фаза 2 |
-|---|---|---|
-| `ICodeGenerationService` | `ManualCodeGenerationService` — пустой код, `manualEntry = true` | Реализация поверх выбранного AI API *(провайдер — )* |
-| `IPlayerStore` | `InMemoryPlayerStore` (ConcurrentDictionary) | `SqlPlayerStore` на EF Core + SQL Server |
-| `IAttemptStore` | `InMemoryAttemptStore` (ConcurrentDictionary) | `SqlAttemptStore` на EF Core + SQL Server |
-| `ILevelStore` | `JsonLevelStore` — читает `Data/levels.json` при старте | Может остаться файловым |
+| Слой | Технология |
+|---|---|
+| Backend | ASP.NET Core 9, Minimal API, C#, один проект на API и статику |
+| Frontend | HTML + CSS + чистый JavaScript (ES-модули), без фреймворков и сборщиков |
+| Выполнение кода игрока/ИИ | `<iframe sandbox="allow-scripts">` **без** `allow-same-origin` |
+| База данных | PostgreSQL + EF Core 9 (`Npgsql.EntityFrameworkCore.PostgreSQL`) |
+| AI | Google Gemini через пакет `Google.GenAI` |
+| Лимит запросов к ИИ | встроенный `System.Threading.RateLimiting`, партиция по `playerId`, без дополнительных пакетов |
+| Идентификация игрока | Никнейм + анонимный GUID в localStorage |
+| Хостинг | не определён, Dockerfile/CI в репозитории нет |
 
-Все реализации регистрируются в `Program.cs` через встроенный DI. Эндпоинты работают **только с интерфейсами**.
+### 2.3. Выбор реализации хранилищ
 
-### 4.3. Стек
+`Program.cs` всегда вызывает
+`StorageRegistration.AddStorage(services, useInMemoryStorage: false, connectionString)`
+(`Services/Storage/StorageRegistration.cs`) — одинаково во всех окружениях,
+включая `Development`. Метод регистрирует **ровно одну** реализацию
+`IPlayerStore`/`IAttemptStore`/`ILeaderboardService` на вызов: in-memory
+(`Services/Storage/InMemory/`) либо EF/Postgres (`Services/Storage/Db/`, после
+проверки, что строка подключения задаёт непустые `Host`, `Database`,
+`Username` — иначе `InvalidOperationException` с понятным сообщением ещё до
+`builder.Build()`). Обе ветки проверены тестом
+(`PromptQuest.Web.Tests/ApiIntegrationTests.AddStorage_SelectsLeaderboardServiceByConfiguration`)
+напрямую на `IServiceCollection`, без поднятия хоста целиком — но из
+`Program.cs` достижима только ветка EF/Postgres; in-memory параметр метода
+существует для тестов, а не как переключатель приложения.
 
-| Слой | Технология | Обоснование |
-|---|---|---|
-| Backend | ASP.NET Core 8, Minimal API, C# | Один проект под API и статику |
-| Frontend | HTML + CSS + чистый JavaScript (ES-модули) | Ядро игры — прямая работа с реальным DOM и sandbox-iframe; фреймворк здесь создаёт лишнюю прослойку |
-| Выполнение кода игрока | `<iframe sandbox="allow-scripts">` **без** `allow-same-origin` | Изоляция от DOM, localStorage и cookie приложения |
-| Хранилище (Фаза 1) | In-memory за интерфейсами | Позволяет собрать всё приложение без БД |
-| База данных (Фаза 2) | SQL Server + EF Core | Заложено архитектурно, **не реализуется сейчас** |
-| AI API | — *(провайдер определяется позже)* | Только через `ICodeGenerationService` |
-| Идентификация игрока | Никнейм + анонимный GUID в localStorage | Модель как в agar.io |
-| Хостинг | — *(не определён)* | — |
+После `builder.Build()`, если `app.Environment.IsDevelopment()`, приложение
+само накатывает миграции (`AppDbContext.Database.Migrate()` в отдельном
+`IServiceScope`) — в `Development` нет отдельного шага деплоя, который бы это
+сделал. Production/Staging ожидаемо накатывают миграции как часть своего
+процесса деплоя (`dotnet ef database update`, раздел «Запуск локально» в
+`README.md`), поэтому `Program.cs` не делает этого вне `Development`.
 
-### 4.4. Контракт совместимости с Фазой 2
+Логика выбора хранилища вынесена из `Program.cs` в отдельный тестируемый метод
+умышленно: top-level statements в `Program.cs` читают конфигурацию
+(`ConnectionStrings:Default`) синхронно при старте, до того как тестовый хост
+успел бы подставить свою — тестировать ветвление через `WebApplicationFactory`
+для такого кода не получится. По той же причине тестовая фабрика
+(`PromptQuest.Web.Tests/PromptQuestWebFactory.cs`) не может «уговорить»
+`Program.cs` выбрать in-memory через конфигурацию: вместо этого она
+подставляет синтаксически валидную, но нерабочую строку подключения через
+переменную окружения `ConnectionStrings__Default` (видна уже на этапе
+`WebApplication.CreateBuilder`, в отличие от конфигурации, подставляемой
+позже), запускает хост под окружением `Testing` (не `Development` — иначе
+`Database.Migrate()` попытался бы реально подключиться по этой строке) и
+затем в `ConfigureServices` заменяет `IPlayerStore`/`IAttemptStore`/
+`ILeaderboardService`, зарегистрированные `Program.cs`, на in-memory —
+регистрация к этому моменту ещё не финализирована, так что замена проходит
+штатно, без повторного запуска ветвления.
 
-Шесть правил, обязательных к соблюдению **уже сейчас**, даже где в Фазе 1 они выглядят избыточными.
+### 2.4. Контракт хранилищ и генератора кода
+
+Интерфейсы расположены в `Services/Storage/` (`IPlayerStore`, `IAttemptStore`,
+`ILevelStore`) и `Services/` (`ILeaderboardService`, `ICodeGenerationService`).
+Правила, которым они подчиняются:
 
 | Правило | Почему важно |
 |---|---|
-| Все методы хранилищ и генератора кода **асинхронные** (`Task`/`Task<T>`) и принимают `CancellationToken`, даже если реализация возвращает `Task.FromResult` | EF Core и сетевой вызов к ИИ асинхронны. Синхронные сигнатуры заставили бы переписывать все эндпоинты |
-| Прогресс игрока — `ICollection<LevelProgress>` с собственным `Id` и `PlayerId`, **не** `Dictionary` | `Dictionary` не отображается в таблицу БД |
-| Сохранение всегда **явное**: после изменения объекта вызывается метод хранилища. Эндпоинты не полагаются на мутацию по ссылке | In-memory объект меняется сам, БД требует явной фиксации. Иначе в Фазе 2 данные молча теряются |
-| `ICodeGenerationService` возвращает результат с признаком успеха и полем ошибки, **не голую строку** | Заглушка не падает, а реальный вызов ИИ падает, отваливается по таймауту, упирается в лимиты |
-| Все `Guid` генерирует приложение, а не хранилище | Иначе автоинкрементные ключи БД изменят порядок операций |
-| Выборка и фильтрация — только внутри реализации хранилища. В эндпоинтах **нет LINQ-запросов к коллекциям** | LINQ по словарю в памяти не превращается в SQL |
+| Все методы хранилищ и генератора кода асинхронные (`Task`/`Task<T>`) и принимают `CancellationToken` | Совместимость EF Core и сетевого вызова к ИИ |
+| Прогресс игрока — `ICollection<LevelProgress>` с собственным `Id` и `PlayerId`, не `Dictionary` | Отображается в таблицу БД |
+| Сохранение всегда явное: после изменения объекта вызывается метод хранилища | In-memory объект меняется сам, БД требует явной фиксации |
+| `ICodeGenerationService` возвращает результат с признаком успеха и полем ошибки, не голую строку | Вызов ИИ может упасть, отвалиться по таймауту, упереться в лимиты |
+| Все `Guid` генерирует приложение (`ValueGeneratedNever` в EF), а не БД | Иначе автоинкрементные ключи изменили бы порядок операций |
+| Выборка и фильтрация — только внутри реализации хранилища, не в эндпоинтах | LINQ по словарю в памяти не превращается в SQL |
 
-**Сигнатуры интерфейсов (не меняются между фазами):**
+**Сигнатуры интерфейсов:**
 
 ```csharp
 public interface IPlayerStore
@@ -168,8 +151,6 @@ public interface ILeaderboardService
 {
     Task<IReadOnlyList<LeaderboardEntryDto>> GetForLevelAsync(
         string levelId, int take, CancellationToken ct = default);
-    Task<IReadOnlyList<LeaderboardEntryDto>> GetGlobalAsync(
-        int take, CancellationToken ct = default);
 }
 
 public interface ICodeGenerationService
@@ -178,82 +159,43 @@ public interface ICodeGenerationService
         LevelDefinition level, string prompt, CancellationToken ct = default);
 }
 
-// Успех/отказ выражен в типе результата, а не исключением
 public sealed record CodeGenerationResult(
     bool       Success,
-    string     Code,        // пусто в Фазе 1 и при отказе
-    bool       ManualEntry, // true в Фазе 1
+    string     Code,
+    bool       ManualEntry,
     CodeSource Source,      // Manual | Ai
-    string?    Error);      // причина отказа, иначе null
+    string?    Error);
 ```
 
-> **Проверка правила:** если в Фазе 2 пришлось править файлы в `Endpoints/`, `Dtos/` или `wwwroot/` — контракт нарушен. Меняться должны только `Services/`, конфигурация EF в `Models/` и регистрация в `Program.cs`.
+`ILeaderboardService` не имеет метода для общего зачёта — суммировать длины
+промтов по разным уровням не имеет смысла как метрика (раздел 8).
+
+**Текущие реализации:**
+
+| Интерфейс | In-memory (`Storage/InMemory/`) | БД/ИИ (`Storage/Db/`, `AI/`) |
+|---|---|---|
+| `IPlayerStore` | `InMemoryPlayerStore` (`ConcurrentDictionary`) | `EfPlayerStore` (PostgreSQL) |
+| `IAttemptStore` | `InMemoryAttemptStore` | `EfAttemptStore` |
+| `ILeaderboardService` | `InMemoryLeaderboardService` | `EfLeaderboardService` |
+| `ILevelStore` | `JsonLevelStore` — читает `Data/levels.json` при старте (используется всегда, независимо от режима хранения) |
+| `ICodeGenerationService` | `AiAgent` (Gemini) — используется всегда; `ManualCodeGenerationService` существует в коде, но больше не регистрируется в DI |
+
+**Как `AiAgent` строит запрос к ИИ (`AI/AiAgent.cs`):** системная инструкция
+собирается из `level.SystemPrompt` (с подстановкой плейсхолдера
+`{CURRENT_CSS}` значением `level.AiScene.BaseCss`), общих правил формата
+ответа (только CSS, без markdown — захардкожены в коде, одинаковы для всех
+уровней) и разметки `level.AiScene.Html`. Единственное сообщение пользователя
+— промт игрока как есть. `level.Goal`/`level.Hint` нигде не читаются
+(`SPEC-ADDENDUM-01.md`, раздел A). `level.Scene` (полная сцена с кувшинками)
+в запрос не попадает — его заменяет `level.AiScene` (`SPEC-ADDENDUM-02.md`).
+
+При любом сбое запроса (исключение, таймаут по `AppOptions.AiRequestTimeoutMs`,
+пустой ответ) `GenerateAsync` возвращает `Success=false`, пустой `Code` и
+причину в `Error` — текст ошибки никогда не попадает в `Code`.
 
 ---
 
-## 5. Структура решения
-
-```
-PromptQuest.sln
-└─ src/
-   └─ PromptQuest.Web/
-      ├─ PromptQuest.Web.csproj            (net8.0)
-      ├─ Program.cs                        DI, маршруты, статика
-      ├─ appsettings.json                  секция PromptQuest (раздел 15)
-      ├─ Configuration/
-      │   └─ AppOptions.cs
-      ├─ Models/
-      │   ├─ Player.cs
-      │   ├─ Attempt.cs
-      │   ├─ LevelProgress.cs
-      │   ├─ LevelDefinition.cs
-      │   ├─ LevelScene.cs
-      │   ├─ LevelValidation.cs
-      │   └─ LevelCheck.cs
-      ├─ Dtos/
-      │   ├─ CreatePlayerRequest.cs / PlayerResponse.cs
-      │   ├─ CreateAttemptRequest.cs / CreateAttemptResponse.cs
-      │   ├─ SubmitResultRequest.cs / SubmitResultResponse.cs
-      │   ├─ LevelSummaryDto.cs / LevelDetailDto.cs
-      │   └─ LeaderboardEntryDto.cs
-      ├─ Services/
-      │   ├─ ICodeGenerationService.cs
-      │   ├─ ManualCodeGenerationService.cs
-      │   ├─ ILevelStore.cs      / JsonLevelStore.cs
-      │   ├─ IPlayerStore.cs     / InMemoryPlayerStore.cs
-      │   ├─ IAttemptStore.cs    / InMemoryAttemptStore.cs
-      │   ├─ ILeaderboardService.cs / InMemoryLeaderboardService.cs
-      │   └─ ScoreCalculator.cs
-      ├─ Endpoints/
-      │   ├─ PlayerEndpoints.cs
-      │   ├─ LevelEndpoints.cs
-      │   ├─ AttemptEndpoints.cs
-      │   └─ LeaderboardEndpoints.cs
-      ├─ Data/
-      │   └─ levels.json                   12 уровней (раздел 8)
-      └─ wwwroot/
-         ├─ index.html                     единственная страница
-         ├─ css/app.css
-         ├─ js/
-         │   ├─ app.js        точка входа, роутинг экранов
-         │   ├─ api.js        обёртки над fetch к /api/*
-         │   ├─ state.js      playerId, nickname, текущий уровень
-         │   ├─ nickname.js   экран ввода никнейма
-         │   ├─ levels.js     экран выбора уровня
-         │   ├─ play.js       экран игры
-         │   ├─ timer.js      таймер уровня
-         │   ├─ sandbox.js    создание iframe и протокол обмена
-         │   └─ leaderboard.js
-         └─ sandbox/
-             ├─ runner.html   документ внутри iframe
-             └─ runner.js     сборка сцены, применение кода, проверки
-```
-
-> `wwwroot/sandbox/runner.js` — **единственное** место, где выполняется код игрока и реализованы виды проверок из раздела 10. Не дублировать эту логику в `js/play.js`.
-
----
-
-## 6. Модель данных (C#)
+## 3. Модель данных (C#)
 
 ```csharp
 public sealed class Player
@@ -261,21 +203,24 @@ public sealed class Player
     public Guid Id { get; init; }
     public string Nickname { get; set; } = "";
     public DateTimeOffset CreatedAt { get; init; }
-    // Коллекция, а НЕ Dictionary: словарь не отображается в таблицу БД
     public ICollection<LevelProgress> Progress { get; } = new List<LevelProgress>();
 }
 
 public sealed class LevelProgress
 {
-    public Guid Id { get; init; }              // собственный ключ (нужен БД)
-    public Guid PlayerId { get; init; }        // внешний ключ
+    public Guid Id { get; init; }
+    public Guid PlayerId { get; init; }
     public string LevelId { get; init; } = "";
     public bool Completed { get; set; }
-    public int BestAttempts { get; set; }      // попыток в лучшем прохождении
-    public int BestTimeMs { get; set; }        // время лучшего прохождения
-    public int BestScore { get; set; }         // очки лучшего прохождения
-    public int TotalAttempts { get; set; }     // всего попыток по уровню
+    public int BestPromptLength { get; set; } // единственная метрика рекорда
     public DateTimeOffset? CompletedAt { get; set; }
+
+    // Исторические поля — больше не вычисляются новой логикой (раздел 8),
+    // оставлены в схеме, чтобы не терять уже сохранённые данные.
+    public int BestAttempts { get; set; }
+    public int BestTimeMs { get; set; }
+    public int BestScore { get; set; }
+    public int TotalAttempts { get; set; }
 }
 
 public sealed class Attempt
@@ -283,23 +228,40 @@ public sealed class Attempt
     public Guid Id { get; init; }
     public Guid PlayerId { get; init; }
     public string LevelId { get; init; } = "";
-    public int AttemptNumber { get; init; }    // номер в текущей сессии уровня
-    public string Prompt { get; init; } = "";  // в Фазе 1 может быть пустым
-    public string Code { get; set; } = "";     // код, который проверялся
-    public CodeSource Source { get; init; }    // Manual | Ai
-    public bool? Passed { get; set; }          // null, пока результат не отправлен
-    public int ElapsedMs { get; set; }
+    public int AttemptNumber { get; init; }
+    public string Prompt { get; init; } = ""; // источник BestPromptLength
+    public string Code { get; set; } = "";
+    public CodeSource Source { get; init; }
+    public bool? Passed { get; set; }
+    public int ElapsedMs { get; set; } // больше не используется (раздел 8)
     public DateTimeOffset CreatedAt { get; init; }
 }
 
 public enum CodeSource { Manual = 0, Ai = 1 }
 ```
 
-Модели уровня (`LevelDefinition`, `LevelScene`, `LevelValidation`, `LevelCheck`) зеркально повторяют JSON-схему раздела 7. Десериализация — `System.Text.Json` с `JsonNamingPolicy.CamelCase`; поле `kind` у проверки читается как **строка** (не enum), чтобы новые виды проверок не требовали правок C#.
+Схема БД (PostgreSQL, миграции `Migrations/20260929215005_InitialCreate` и
+`Migrations/20261006122006_AddBestPromptLength`): таблицы `Players`,
+`Attempts`, `LevelProgresses`; все первичные ключи — GUID, генерируемые
+приложением (`ValueGeneratedNever`); `LevelProgresses` имеет уникальный индекс
+`(PlayerId, LevelId)` и вспомогательный индекс `(LevelId, Completed,
+BestPromptLength)` для лидерборда; удаление игрока каскадно удаляет его
+прогресс и попытки. Миграции генерируются через
+`Services/Storage/Db/AppDbContextFactory.cs` (`IDesignTimeDbContextFactory`) —
+он нужен, поскольку `AppDbContext` регистрируется только в одной из двух
+веток `StorageRegistration.AddStorage`, и обычная генерация миграций без него
+не находит контекст.
+
+Модели уровня (`LevelDefinition`, `LevelScene`, `LevelValidation`, `LevelCheck`)
+зеркально повторяют JSON-схему раздела 4; `LevelDefinition.AiScene` — ещё один
+экземпляр `LevelScene`, отдельный от `LevelDefinition.Scene`. Десериализация —
+`System.Text.Json` с `JsonNamingPolicy.CamelCase`; поле `kind` у проверки
+читается как **строка** (не enum), чтобы новые виды проверок не требовали
+правок C#.
 
 ---
 
-## 7. Формат описания уровня (JSON)
+## 4. Формат описания уровня (JSON)
 
 `Data/levels.json` — массив объектов уровня.
 
@@ -307,94 +269,113 @@ public enum CodeSource { Manual = 0, Ai = 1 }
 |---|---|---|
 | `id` | string | Уникальный идентификатор, напр. `css-01-justify` |
 | `order` | int | Порядок в списке, с 1 |
-| `category` | string | `css` \| `selector` \| `js` |
+| `category` | string | сейчас всегда `css` |
 | `title` | string | Название уровня для игрока |
-| `goal` | string | Что должно получиться |
-| `hint` | string | Подсказка по формулировке промта (не решение) |
+| `goal` | string | Короткая цель без слов/цифр, выдающих положение — видит только игрок, **никогда не уходит в запрос к ИИ** |
+| `hint` | string | Общая подсказка («Опиши ИИ то, что видишь на картинке») |
 | `difficulty` | int | 1–3 |
-| `injectionMode` | string | `styleAppend` \| `selector` \| `script` (раздел 9.3) |
-| `scene.html` | string | HTML сцены, вставляется внутрь `#scene-root` |
-| `scene.baseCss` | string | Базовый CSS, применяется до кода игрока |
-| `codeTemplate` | string | Необязательная заготовка в поле кода |
-| `systemPrompt` | string | Системный промт уровня; в Фазе 1 не используется, но обязан присутствовать |
+| `injectionMode` | string | сейчас всегда `styleAppend` |
+| `scene.html` | string | HTML полной сцены (с кувшинками), для рендера игроку и для валидатора |
+| `scene.baseCss` | string | Базовый CSS полной сцены |
+| `aiScene.html` | string | HTML, уходящий в запрос к ИИ — те же id управляемых элементов, без кувшинок |
+| `aiScene.baseCss` | string | CSS, уходящий в запрос к ИИ (подставляется в `{CURRENT_CSS}`) — без правил кувшинок/положения цели |
+| `codeTemplate` | string | Заготовка в поле кода (ручной режим) |
+| `systemPrompt` | string | Системный промт уровня; уходит в запрос к ИИ вместе с `aiScene` |
 | `validation.tolerancePx` | int | Допуск для геометрических проверок (по умолчанию 8) |
 | `validation.timeoutMs` | int | Предельное время прогона (по умолчанию 2000) |
-| `validation.checks` | array | Массив проверок (раздел 10) |
+| `validation.checks` | array | Массив проверок (раздел 7) |
 | `forbiddenPatterns` | array | Регулярные выражения: совпадение → прогон провален с пояснением |
 
-### Пример уровня
+---
 
-```json
-{
-  "id": "css-01-justify",
-  "order": 1,
-  "category": "css",
-  "title": "Доставь лягушку к кувшинке",
-  "goal": "Лягушка должна оказаться на кувшинке у правого края пруда.",
-  "hint": "Опиши ИИ не приём, а результат: где именно должна оказаться лягушка.",
-  "difficulty": 1,
-  "injectionMode": "styleAppend",
-  "scene": {
-    "html": "<div id=\"pond\"><div id=\"frog\"></div><div id=\"lily\"></div></div>",
-    "baseCss": "#pond{display:flex;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957;border-radius:50%}#lily{position:absolute;right:16px;top:16px;width:56px;height:56px;background:#2f8f4e;border-radius:50%}"
-  },
-  "codeTemplate": "#pond {\n  \n}",
-  "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
-  "validation": {
-    "tolerancePx": 8,
-    "timeoutMs": 2000,
-    "checks": [
-      {
-        "id": "frog-on-lily",
-        "kind": "overlapCenter",
-        "subject": "#frog",
-        "target": "#lily",
-        "description": "Лягушка находится на кувшинке"
-      }
-    ]
-  },
-  "forbiddenPatterns": []
-}
-```
+## 5. Каталог уровней
+
+Все 13 уровней — только про лягушек и кувшинки внутри `#pond` (flex- или
+grid-контейнер). `goal`/`hint` не называют положение цели, направление,
+число или CSS-свойство (`SPEC-ADDENDUM-01.md`); `aiScene` каждого уровня не
+содержит кувшинок и данных о положении цели (`SPEC-ADDENDUM-02.md`) — оба
+правила проверены тестами (`PromptQuest.Web.Tests/LevelCatalogTests.cs`).
+
+| ID | Задача для игрока | Проверка |
+|---|---|---|
+| `css-01-justify` | Лягушка и кувшинка у правого края пруда | `overlapCenter(#frog,#lily)` |
+| `css-02-align` | Лягушка и кувшинка у нижнего края пруда | `overlapCenter(#frog,#lily)` |
+| `css-03-center` | Лягушка и кувшинка в центре пруда | `overlapCenter(#frog,#lily)` |
+| `css-04-reverse` | Три лягушки на кувшинках своего цвета, зеркальный порядок | 3 × `overlapCenter` |
+| `css-05-spread` | Три лягушки равномерно по ширине, крайние у краёв | 3 × `overlapCenter` |
+| `css-06-grid` | Сетка 3×3, кувшинка в одной клетке | `containedIn(#frog,#cell-9)` |
+| `css-07-two-spots` | Сетка 4×3 (как `css-06`/`css-08`), две лягушки, у каждой кувшинка её цвета в своей клетке | 2 × `overlapCenter` |
+| `css-08-big-lily` | Кувшинка 2×2 клетки сетки 3×3 — **два** фрога должны поместиться на неё, не перекрывая друг друга | 2 × `containedIn(#frog-N,#lily-zone)` + `noOverlap(#frog-1,#frog-2)` |
+| `css-09-two-ponds` | Два независимых пруда-сетки (2×2 и 3×3), в каждом своя пара | 2 × `containedIn` |
+| `css-10-four-colors` | Сетка 4×3 (2×2 целевая зона + ряд из 4 отдельных стартовых клеток), четыре лягушки на кувшинках своего цвета | 4 × `containedIn` |
+| `css-11-shift` | Сетка 8×6 с подписанными столбцами A–H и рядами 1–6; у каждой из 6 цветных лягушек кувшинка сдвинута на один и тот же вектор (+3 столбца, +2 ряда) | 6 × `overlapCenter` |
+| `css-12-rainbow` | Сетка 6×3 с подписями; 6 лягушек сверху в произвольном порядке, кувшинки снизу — в порядке радуги | 6 × `overlapCenter` |
+| `css-13-rotate` | Сетка 6×6 без подписей (как `css-06`/`css-08`); у каждой лягушки кувшинка в точке, симметричной относительно центра поля (поворот на 180°, не отражение) | 6 × `overlapCenter` |
+
+Эталонные CSS-решения (для ручной проверки, не хранятся как отдельное поле):
+
+| ID | Решение |
+|---|---|
+| `css-01-justify` | `#pond{justify-content:flex-end}` |
+| `css-02-align` | `#pond{align-items:flex-end}` |
+| `css-03-center` | `#pond{justify-content:center;align-items:center}` |
+| `css-04-reverse` | `#pond{flex-direction:row-reverse}` |
+| `css-05-spread` | `#pond{justify-content:space-between}` |
+| `css-06-grid` | `#frog{grid-column:3;grid-row:3}` |
+| `css-07-two-spots` | `#frog-green{grid-column:3;grid-row:3}` `#frog-blue{grid-column:2;grid-row:2}` |
+| `css-08-big-lily` | `#frog-1{grid-column:1;grid-row:1}` `#frog-2{grid-column:2;grid-row:1}` |
+| `css-09-two-ponds` | `#frog-a{grid-column:2;grid-row:2}` `#frog-b{grid-column:2;grid-row:2}` |
+| `css-10-four-colors` | `#frog-yellow{grid-column:1;grid-row:1}` `#frog-green{grid-column:2;grid-row:1}` `#frog-red{grid-column:1;grid-row:2}` `#frog-blue{grid-column:2;grid-row:2}` |
+| `css-11-shift` | `#frog-red{grid-column:5;grid-row:4}` `#frog-blue{grid-column:7;grid-row:4}` `#frog-yellow{grid-column:6;grid-row:6}` `#frog-green{grid-column:9;grid-row:5}` `#frog-purple{grid-column:8;grid-row:7}` `#frog-orange{grid-column:5;grid-row:7}` |
+| `css-12-rainbow` | `#frog-yellow{grid-column:4;grid-row:4}` `#frog-purple{grid-column:7;grid-row:4}` `#frog-red{grid-column:2;grid-row:4}` `#frog-blue{grid-column:6;grid-row:4}` `#frog-orange{grid-column:3;grid-row:4}` `#frog-green{grid-column:5;grid-row:4}` |
+| `css-13-rotate` | `#frog-red{grid-column:6;grid-row:6}` `#frog-blue{grid-column:4;grid-row:5}` `#frog-yellow{grid-column:5;grid-row:3}` `#frog-green{grid-column:2;grid-row:6}` `#frog-purple{grid-column:1;grid-row:4}` `#frog-orange{grid-column:3;grid-row:3}` |
+
+Уровни 11–12 вводят размеченную сетку — столбцы-буквы и ряды-цифры как
+настоящие текстовые узлы (`<div class="hcell" id="col-A">A</div>` и т.п.) в
+обоих представлениях сцены, не как CSS `content` — координатный язык,
+понятный и игроку, и модели, не раскрывающий положение кувшинок. `css-13`
+обходится без подписей: он уже устроен как CSS Grid (как `css-06`/`css-07`/
+`css-08`/`css-09`/`css-10`), и описывать клетку относительно других клеток
+сетки можно без букв/цифр. Смысл каждого уровня — заменить перечисление
+«лягушка → клетка» одним правилом, который дорого (длинно) описать
+перечислением и легко сформулировать неточно: `css-11-shift` проверяет,
+заметит ли игрок общий вектор сдвига; `css-12-rainbow` — что порядок
+кувшинок называется одним словом независимо от перемешанного порядка
+лягушек; `css-13-rotate` — что игрок назовёт операцию точно (поворот на
+180°, а не «зеркально», что для несимметричного расположения дало бы другие
+клетки).
+
+Уровни на CSS-селекторы и JavaScript, существовавшие в более ранней версии
+каталога, из текущей реализации удалены.
 
 ---
 
-## 8. Каталог уровней Фазы 1
+## 6. Движок валидации
 
-Столбец «Ожидаемое решение» — для разработки проверок, игроку не показывается.
+Код, применяемый к сцене — недоверенный (его пишет ИИ по промту игрока). Он
+выполняется в изолированном контексте и общается с приложением только
+сообщениями. Раннер всегда получает полную `scene` (с кувшинками) — `aiScene`
+используется только на сервере при построении запроса к ИИ и до браузера
+игрока не доходит отдельно от обычного ответа `GET /api/levels/{id}` (который
+`aiScene` и не включает, см. раздел 9).
 
-| ID | Задача для игрока | Ожидаемое решение | Проверки |
-|---|---|---|---|
-| `css-01-justify` | Лягушка должна оказаться на кувшинке у правого края | `justify-content: flex-end` | `overlapCenter(#frog,#lily)` |
-| `css-02-align` | Лягушка должна опуститься на кувшинку у нижнего края | `align-items: flex-end` | `overlapCenter(#frog,#lily)` |
-| `css-03-center` | Лягушка должна оказаться ровно в центре пруда | `justify-content:center; align-items:center` | `overlapCenter(#frog,#lily)` |
-| `css-04-reverse` | Три лягушки должны сесть на кувшинки своего цвета (порядок зеркальный) | `flex-direction: row-reverse` | 3 × `overlapCenter` |
-| `css-05-spread` | Три лягушки равномерно по ширине, крайние прижаты к краям | `justify-content: space-between` | 3 × `overlapCenter` |
-| `css-06-grid` | Лягушка должна попасть в правую нижнюю клетку сетки 3×3 | `grid-column:3; grid-row:3` | `containedIn(#frog,#cell-9)` |
-| `sel-01-type` | Выбрать все тарелки на столе | `plate` | `selectorMatches` |
-| `sel-02-class` | Выбрать только маленькие тарелки | `.small` | `selectorMatches` |
-| `sel-03-nth` | Выбрать каждый второй элемент списка | `li:nth-child(even)` | `selectorMatches` |
-| `js-01-sum` | Вывести сумму чисел из массива в `#output` | `document.querySelector('#output').textContent = …` | `textContent(#output,'42')` |
-| `js-02-class` | Пометить классом `active` все элементы с `data-value` больше 10 | перебор `.item` + `classList.add` | `classOnElements` |
-| `js-03-build` | Построить список `<li>` по данным массива внутри `#list` | цикл + `createElement`/`append` | `elementCount(#list li,4)` + `textContent` |
+### 6.1. Изоляция
 
-Формулировки `goal` и `hint` пишутся **от результата, а не от приёма**: в `goal` не должно встречаться название конкретного CSS-свойства или JS-метода.
+- iframe создаётся с `sandbox="allow-scripts"` и **без** `allow-same-origin` —
+  документ получает непрозрачный (opaque) источник.
+- Код внутри не может обратиться к DOM родителя, к localStorage, к cookie и к
+  API приложения.
+- `event.origin` для сообщений из такого iframe равен строке `"null"`;
+  подлинность проверяется сравнением `event.source` с `iframe.contentWindow` и
+  совпадением `runId`.
+- iframe пересоздаётся перед каждым прогоном. После получения результата он
+  остаётся на экране (показывает игроку финальное состояние сцены) — удаляется
+  досрочно только при срабатывании сторожевого таймера (бесконечный цикл).
+- Сторожевой таймер на стороне родителя: если результат не пришёл за
+  `validation.timeoutMs`, родитель удаляет iframe и засчитывает прогон как
+  неуспешный с причиной `timeout`.
 
----
-
-## 9. Движок валидации
-
-Код игрока — недоверенный код (в Фазе 2 его пишет ИИ по произвольному промту). Он выполняется в изолированном контексте и общается с приложением только сообщениями.
-
-### 9.1. Изоляция
-
-- iframe создаётся с `sandbox="allow-scripts"` и **БЕЗ** `allow-same-origin` — документ получает непрозрачный (opaque) источник
-- Следствие: код внутри не может обратиться к DOM родителя, к localStorage, к cookie и к API приложения
-- **Важная деталь:** в сообщениях от такого iframe `event.origin` равен строке `"null"`. Проверять origin бессмысленно — подлинность проверяется сравнением `event.source` с `iframe.contentWindow` и совпадением `runId`
-- iframe **пересоздаётся перед каждым прогоном** и удаляется после — чистое состояние сцены
-- **Сторожевой таймер на стороне родителя:** если результат не пришёл за `validation.timeoutMs`, родитель удаляет iframe и засчитывает прогон как неуспешный с причиной `timeout`. Это единственный надёжный способ прервать синхронный бесконечный цикл
-
-### 9.2. Протокол postMessage
+### 6.2. Протокол postMessage
 
 `runId` — GUID, генерируемый родителем на каждый прогон.
 
@@ -409,7 +390,8 @@ public enum CodeSource { Manual = 0, Ai = 1 }
   "injectionMode": "styleAppend",
   "scene": { "html": "…", "baseCss": "…" },
   "code": "#pond { justify-content: flex-end; }",
-  "validation": { "tolerancePx": 8, "timeoutMs": 2000, "checks": [ ] }
+  "validation": { "tolerancePx": 8, "timeoutMs": 2000, "checks": [ ] },
+  "forbiddenPatterns": []
 }
 
 // iframe → родитель: результат
@@ -422,364 +404,298 @@ public enum CodeSource { Manual = 0, Ai = 1 }
       "description": "Лягушка находится на кувшинке",
       "expected": "центр (440, 44)", "actual": "центр (44, 44)" }
   ],
-  "error": null            // строка с текстом ошибки, если код игрока упал
+  "error": null,
+  "size": { "width": 480, "height": 260 }
 }
 ```
 
-### 9.3. Режимы применения кода
+`size` — измеренный размер `#pond` (раздел 6.5, пункт 3); `sandbox.js`
+подгоняет под него `width`/`height` iframe-элемента на странице игры.
 
-| Режим | Как раннер применяет код | Уровни |
-|---|---|---|
-| `styleAppend` | Код вставляется как содержимое `<style id="player-code">` **после** базового CSS. Позже в каскаде — переопределяет базовые правила | `css-01` … `css-06` |
-| `selector` | Код трактуется как строка CSS-селектора и подставляется в `sceneRoot.querySelectorAll(code)`. Синтаксическая ошибка перехватывается и возвращается как `error` | `sel-01` … `sel-03` |
-| `script` | Код оборачивается в функцию и выполняется после построения сцены внутри `try/catch`. Исключение попадает в поле `error` | `js-01` … `js-03` |
+### 6.3. Режимы применения кода
 
-### 9.4. Порядок прогона внутри раннера
+В текущем каталоге уровней используется только `styleAppend` (код вставляется
+как содержимое `<style id="player-code">` после базового CSS). Раннер
+поддерживает также режимы `selector` (код — CSS-селектор, подставляется в
+`querySelectorAll`) и `script` (код оборачивается в функцию и выполняется в
+`try/catch`) — они реализованы в `wwwroot/sandbox/runner.js`, но сейчас не
+используются ни одним уровнем каталога.
 
-1. Очистить `#scene-root` и удалить `<style id="player-code">` от предыдущего прогона
-2. Вставить `scene.baseCss` в `<style id="base-css">`, затем `scene.html` в `#scene-root`
-3. Применить код игрока согласно `injectionMode`
-4. **Дождаться завершения раскладки: два подряд `requestAnimationFrame`**
-5. Выполнить проверки из `validation.checks` по порядку, собрать массив результатов
-6. `passed` = все проверки пройдены и `error` отсутствует
-7. Отправить `RUN_RESULT` родителю
+### 6.4. Порядок прогона внутри раннера
 
-> **Шаг 4 обязателен.** Если снимать `getBoundingClientRect` сразу после вставки стилей, браузер может вернуть геометрию до пересчёта раскладки, и корректное решение будет ошибочно засчитано как неверное. Это самая частая причина «плавающих» ложных провалов в подобных валидаторах.
+1. Очистить `#scene-root` и удалить `<style id="player-code">` от предыдущего прогона.
+2. Вставить `scene.baseCss` в `<style id="base-css">`, затем `scene.html` в `#scene-root`.
+3. Проверить `forbiddenPatterns` — совпадение проваливает прогон немедленно, без выполнения кода.
+4. Применить код игрока согласно `injectionMode`.
+5. Дождаться завершения раскладки: два подряд `requestAnimationFrame`.
+6. Выполнить проверки из `validation.checks` по порядку, собрать массив результатов.
+7. `passed` = все проверки пройдены и `error` отсутствует.
+8. Отправить `RUN_RESULT` родителю.
+
+### 6.5. Требования к конструированию сцены
+
+Обязательны для `scene`/`aiScene` любого уровня — нарушение считается багом
+сцены, а не валидатора:
+
+1. **Лягушки и декоративные клетки не должны зависеть от авто-размещения
+   CSS Grid, если кувшинка размещена явно.** CSS Grid сначала резервирует
+   место под элементы с явным `grid-column`/`grid-row`, и только потом
+   раскладывает остальные («авто») элементы по оставшимся местам. Если
+   декоративная клетка (`.cell`) размещена авто, а кувшинка, занимающая ту же
+   клетку — явно, авто-алгоритм считает эту клетку занятой и сдвигает саму
+   декоративную клетку (и всё, что идёт за ней в DOM) в следующую свободную
+   —  сетка 3×3 превращается в «лесенку» из неполных рядов, а проверка
+   сравнивает лягушку не с той клеткой, которая видна на экране. Поэтому во
+   всех grid-уровнях у **каждой** клетки и у лягушки — явный
+   `grid-column`/`grid-row`; ничего не остаётся на авто-размещение.
+2. Кувшинка — `position:absolute` внутри позиционированного контейнера
+   (flex-уровни) либо `position:static` с явным `grid-column`/`grid-row`,
+   перекрывающим клетку-цель (grid-уровни) — в обоих случаях она не участвует
+   в раскладке соседей.
+3. Сцена не создаёт скролл внутри `iframe`. `wwwroot/sandbox/runner.html`
+   ставит `overflow:hidden` и нулевые отступы на `html`/`body` как последний
+   рубеж — сцену всё равно нужно размерить так, чтобы в этом не было нужды.
+   `.sandbox-frame` не имеет единого фиксированного размера для всех
+   уровней — `runner.js` измеряет фактический `#pond.getBoundingClientRect()`
+   после каждого прогона и сообщает его в `RUN_RESULT`, `sandbox.js`
+   подгоняет под него размер iframe (раздел 6.2). Это значит, что `#pond`
+   grid-уровня обязан иметь явный `width`, совпадающий с суммой его
+   `grid-template-columns`/`gap`/`padding` (c `box-sizing:border-box`, если
+   есть `padding`) — иначе он, как обычный block-элемент, растягивается на
+   всю доступную ширину вместо настоящего размера сетки, и измерение
+   возвращает неверное число.
+4. Кувшинка (`.lily`) — круг или овал со сплошной непрозрачной заливкой
+   контрастного цвета; общий стиль в `runner.html` даёт форму и запасной
+   цвет, но уровень, задающий свой цвет, должен делать это явно для каждого
+   `.lily`-элемента на сцене. Если лягушка в решённом состоянии может оказаться
+   точно поверх кувшинки её собственного цвета (`css-04`/`css-10`..`css-13`),
+   кувшинка должна быть крупнее лягушки (кольцо остаётся видимым поверх) и/или
+   заметно темнее того же оттенка — иначе при совпадении их не отличить.
+5. В исходном положении (до решения игрока) лягушка и кувшинка не
+   перекрываются; никакие два фрога не стартуют в одной точке/клетке.
+6. Если у уровня нет структурной координатной сетки (flex-сцена со свободным
+   `position:absolute`), на поле должны быть нейтральные зрительные ориентиры
+   (например, тонкая фоновая сетка линий или сама CSS Grid), иначе положение
+   цели физически нечем описать словами. В текущем каталоге это решено тем,
+   что все многоклеточные уровни — CSS Grid (`css-06`-`css-13`): у `css-07`
+   раньше были только декоративные линии поверх свободных координат, а
+   кувшинки не лежали в клетках — редизайн перевёл его на ту же сетку, что и
+   `css-06`/`css-08`/`css-09`/`css-10`. Ориентиры разрешено включать в
+   `aiScene` (они не говорят, где кувшинка); сама кувшинка и любые данные о
+   её положении — по-прежнему никогда.
+
+Пункты 3–4 проверены тестом
+`PromptQuest.Web.Tests/RunnerBrowserTests.Scene_DoesNotOverflow_AndLilyIsVisible`
+в настоящем Chromium (раздел 14); пункты 1–2 проверяются тем же тестовым
+классом косвенно — через `ReferenceSolution_Passes_EmptyCode_Fails`, который
+не прошёл бы, если бы клетка/лягушка оказались не там, где их ожидает проверка.
+Пункты 5–6 не имеют отдельного автотеста — соблюдены по построению разметки
+каждого уровня и проверены визуально (скриншоты в реальном Chromium) при
+добавлении/редизайне конкретного уровня.
 
 ---
 
-## 10. Виды проверок
+## 7. Виды проверок
 
-Реализуются в `wwwroot/sandbox/runner.js` как словарь функций `(check, ctx) => CheckResult`. Значение поля `kind` сопоставляется с ключом словаря. **Неизвестный `kind` — ошибка прогона, а не тихий пропуск.**
+Реализованы в `wwwroot/sandbox/runner.js` как словарь функций
+`(check, ctx) => CheckResult`. Неизвестный `kind` — ошибка прогона, а не тихий
+пропуск.
 
-| kind | Поля | Условие прохождения |
-|---|---|---|
-| `overlapCenter` | `subject`, `target` | Центры прямоугольников совпадают в пределах `tolerancePx` по обеим осям |
-| `containedIn` | `subject`, `target` | Прямоугольник `subject` полностью внутри `target` с допуском `tolerancePx` |
-| `orderX` | `selectors` (массив) | Элементы расположены слева направо именно в указанном порядке (по центру X) |
-| `orderY` | `selectors` (массив) | То же по вертикали, сверху вниз |
-| `computedStyle` | `subject`, `property`, `expected` | `getComputedStyle(subject)[property]` равно `expected` (строгое сравнение строк после trim) |
-| `selectorMatches` | `expectedIds` (массив) | Множество `id` элементов, выбранных селектором игрока, совпадает с `expectedIds` без учёта порядка |
-| `textContent` | `subject`, `expected` | `textContent` элемента после trim равно `expected` |
-| `classOnElements` | `selector`, `className`, `expectedIds` | Класс присутствует ровно у элементов с `id` из `expectedIds` и отсутствует у остальных, подходящих под `selector` |
-| `elementCount` | `selector`, `expected` | Количество элементов под `selector` внутри `#scene-root` равно `expected` |
+| kind | Поля | Условие прохождения | Используется каталогом сейчас |
+|---|---|---|---|
+| `overlapCenter` | `subject`, `target` | Центры совпадают в пределах `tolerancePx` по обеим осям | да |
+| `containedIn` | `subject`, `target` | `subject` полностью внутри `target` с допуском `tolerancePx` | да |
+| `noOverlap` | `subject`, `target` | Прямоугольники `subject` и `target` не пересекаются (строгая проверка, без `tolerancePx`) | да (только `css-08-big-lily`) |
+| `orderX` / `orderY` | `selectors` | Элементы расположены в заданном порядке по X/Y | нет |
+| `computedStyle` | `subject`, `property`, `expected` | `getComputedStyle` равно `expected` (строгое сравнение после trim) | нет |
+| `selectorMatches` | `expectedIds` | Множество `id`, выбранных селектором игрока, совпадает с `expectedIds` | нет |
+| `textContent` | `subject`, `expected` | `textContent` после trim равно `expected` | нет |
+| `classOnElements` | `selector`, `className`, `expectedIds` | Класс присутствует ровно у элементов с нужными `id` | нет |
+| `elementCount` | `selector`, `expected` | Количество элементов под `selector` равно `expected` | нет |
 
-Каждая функция возвращает объект с полями `id`, `passed`, `description`, `expected`, `actual`. Поля `expected` и `actual` — **человекочитаемые строки**: именно они показываются игроку как объяснение, почему попытка не засчитана, и дают материал для уточнения следующего промта. Проверка не должна возвращать голое `false` без пояснения.
-
----
-
-## 11. Попытки, время, очки
-
-### 11.1. Время
-
-- Отсчёт начинается, когда экран игры отрисован и сцена показана игроку
-- Останавливается в момент получения первого успешного `RUN_RESULT`
-- Значение берётся из `performance.now()` (монотонные часы), **не** `Date.now()`
-- При `visibilitychange → hidden` таймер ставится на паузу, при возврате возобновляется
-- Повторное открытие пройденного уровня начинает новую сессию: таймер и счётчик обнуляются, в статистику идёт лучший результат
-
-### 11.2. Попытки
-
-- Попытка засчитывается по нажатию кнопки запуска — один запуск = одна попытка
-- **Успешная попытка тоже считается:** пройти с первого раза — это 1 попытка, а не 0
-- Прогон с ошибкой выполнения или таймаутом **считается** попыткой
-- Пустой код (после trim строка пуста) попыткой **не** считается и не отправляется на сервер — показывается подсказка
-
-### 11.3. Очки
-
-Формула реализуется **на сервере** в `ScoreCalculator`, чтобы клиент не мог назначить себе счёт:
-
-```
-score = Max(0, 1000 - (attempts - 1) * 75 - (elapsedMs / 1000) * 2)
-
-// attempts  — число попыток до успеха включительно
-// elapsedMs — время от открытия уровня до успеха
-// результат округляется до целого вниз
-```
-
-- Лучший результат по уровню — попытка с наибольшим `score`; при равенстве выигрывает меньшее время
-- Общий рейтинг — сумма лучших `score` по всем пройденным уровням; при равенстве выше тот, у кого меньше суммарное время
-- Новый результат перезаписывает личный рекорд только если он **строго лучше**
+Каждая функция возвращает `id`, `passed`, `description`, `expected`, `actual` —
+последние два поля человекочитаемые, показываются игроку как объяснение.
 
 ---
 
-## 12. HTTP API
+## 8. Метрика: длина промта
 
-Все эндпоинты возвращают JSON в camelCase. Ошибки — в формате `ProblemDetails` с осмысленным полем `detail`.
+- Единственный показатель успеха на уровне — длина промта в Unicode-символах
+  **после `Trim()`**. Считается на сервере, по тексту промта, уже сохранённому
+  в `Attempt.Prompt` — значение от клиента не принимается.
+  Учитываются только успешные попытки (`Passed = true`).
+- Личный рекорд по уровню — `LevelProgress.BestPromptLength`, минимальная
+  длина среди успешных попыток игрока; новый результат заменяет рекорд только
+  если он строго короче.
+- Время прохождения и число попыток **не участвуют** ни в рекордах, ни в
+  рейтинге, ни в начислении чего-либо — поля `BestAttempts`/`BestTimeMs`/
+  `BestScore`/`TotalAttempts`/`Attempt.ElapsedMs` остаются в схеме (раздел 3),
+  но новой логикой не вычисляются. `ScoreCalculator` удалён из кода.
+- Попытка регистрируется на сервере (`POST /api/attempts`) при отправке
+  промта; при сбое ИИ (раздел 2.4) или срабатывании лимита запросов (раздел 9)
+  попытка не создаётся.
+- Пустой промт (после `Trim()`) не отправляется в `GenerateAsync` — `AiAgent`
+  возвращает `Success=false` без обращения к Gemini.
+
+---
+
+## 9. HTTP API
+
+Все эндпоинты возвращают JSON в camelCase. Ошибки — `ProblemDetails` с полем `detail`.
 
 | Метод и путь | Назначение |
 |---|---|
 | `POST /api/players` | Создать игрока по никнейму, получить `playerId` |
-| `GET /api/players/{playerId}` | Игрок и его прогресс; 404, если не найден |
-| `GET /api/levels` | Список уровней (краткая форма, со статусом прохождения) |
-| `GET /api/levels/{levelId}` | Полное описание уровня: сцена, проверки, шаблон кода |
-| `POST /api/attempts` | Зарегистрировать попытку и получить код |
-| `POST /api/attempts/{attemptId}/result` | Отправить итог прогона, получить очки |
-| `GET /api/leaderboard/levels/{levelId}` | Топ по уровню (параметр `take`, по умолчанию 20) |
-| `GET /api/leaderboard/global` | Общий топ по сумме очков |
+| `GET /api/players/{playerId}` | Игрок и его прогресс (`promptLength` по каждому уровню); 404, если не найден |
+| `GET /api/levels` | Список уровней (краткая форма, с `bestPromptLength`, если передан `playerId`) |
+| `GET /api/levels/{levelId}` | Полное описание уровня: `scene`, проверки, шаблон кода (без `systemPrompt` и без `aiScene` — они не уходят в браузер) |
+| `POST /api/attempts` | Зарегистрировать попытку и получить код от ИИ. `429` с заголовком `Retry-After` при превышении лимита запросов на игрока (по умолчанию 10/мин, `AppOptions.AiRequestsPerMinutePerPlayer`); `502`, если ИИ не ответил — в обоих случаях попытка не создаётся |
+| `POST /api/attempts/{attemptId}/result` | Отправить итог прогона, получить `promptLength` и факт личного рекорда |
+| `GET /api/leaderboard/levels/{levelId}` | Топ по уровню (параметр `take`, по умолчанию 20), сортировка по возрастанию `promptLength`, при равенстве — раньше завершивший выше |
 
-### 12.1. Создание игрока
-
-```jsonc
-POST /api/players
-{ "nickname": "Vanya" }
-
-200 OK
-{ "playerId": "8c1f…", "nickname": "Vanya" }
-
-// Никнейм: 2–20 символов после trim, любые печатные символы.
-// Уникальность НЕ требуется — тёзки допускаются (модель agar.io).
-// При пустом или слишком длинном никнейме — 400 с пояснением.
-```
-
-### 12.2. Начало попытки
-
-```jsonc
-POST /api/attempts
-{
-  "playerId": "8c1f…",
-  "levelId":  "css-01-justify",
-  "prompt":   ""           // в Фазе 1 может быть пустым
-}
-
-200 OK
-{
-  "attemptId":     "a91d…",
-  "attemptNumber": 3,
-  "code":          "",     // Фаза 1: пусто, код вводит человек
-  "source":        "manual",
-  "manualEntry":   true    // клиент разблокирует поле кода
-}
-```
-
-В Фазе 2 тот же эндпоинт вернёт `source = "ai"`, `manualEntry = false` и заполненный `code`. **Контракт не меняется**, меняется только реализация `ICodeGenerationService`. Фронтенд не требует правок.
-
-### 12.3. Результат прогона
-
-```jsonc
-POST /api/attempts/{attemptId}/result
-{
-  "passed":    true,
-  "elapsedMs": 48210,
-  "code":      "#pond { justify-content: flex-end; }",
-  "checks": [ { "id": "frog-on-lily", "passed": true } ]
-}
-
-200 OK
-{
-  "accepted":     true,
-  "score":        846,
-  "personalBest": true,
-  "attempts":     3,
-  "nextLevelId":  "css-02-align"   // null, если это последний уровень
-}
-```
-
-### 12.4. Таблица лидеров
-
-```jsonc
-GET /api/leaderboard/levels/css-01-justify?take=20
-
-200 OK
-[
-  { "rank": 1, "nickname": "Vanya", "attempts": 1, "timeMs": 21400, "score": 957 },
-  { "rank": 2, "nickname": "Anon",  "attempts": 2, "timeMs": 33100, "score": 859 }
-]
-```
-
-> `playerId` наружу **не отдаётся** — только никнейм и цифры.
+Общего зачёта нет (раздел 2.4). `playerId` в ответах таблицы лидеров не
+отдаётся — только никнейм и `promptLength`.
 
 ---
 
-## 13. Фронтенд
+## 10. Фронтенд
 
-Одна HTML-страница, четыре экрана, переключаемых показом/скрытием секций. Допустим hash-роутинг (`#/levels`, `#/play/css-01-justify`, `#/leaderboard`).
+Одна HTML-страница, четыре экрана (ввод никнейма, список уровней, игра,
+таблица лидеров по уровню), переключаемых hash-роутингом (`#/levels`,
+`#/play/<id>`, `#/leaderboard`).
 
-### 13.1. Экран 1 — ввод никнейма
+На экране игры под полем промта — счётчик символов (считает `Trim()`-длину в
+реальном времени, тем же способом, что и сервер при подсчёте рекорда). Поле
+кода и кнопки управляются флагом `manualEntry`, который приходит с сервера
+(`PromptQuest:ManualCodeEntry` в конфигурации) — фронтенд не содержит жёстко
+зашитого режима:
 
-- Показывается, если в localStorage нет ключа `pq.playerId`
-- Поле ввода, кнопка «Играть», валидация длины 2–20 символов
-- По успеху: `POST /api/players` → сохранить `pq.playerId` и `pq.nickname` → перейти к выбору уровня
-- Ссылка «сменить никнейм» в шапке: очищает localStorage и возвращает на этот экран
-
-### 13.2. Экран 2 — выбор уровня
-
-- Сетка карточек: номер, название, категория, сложность
-- Пройденные помечены; показываются лучшие попытки и время
-- Уровни **не блокируются**: играть можно в любом порядке
-
-### 13.3. Экран 3 — игра
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│ PromptQuest   Уровень 1 / 12   Время 00:42   Попыток: 3      │
-├───────────────────────────────┬──────────────────────────────┤
-│ ЦЕЛЬ                          │ ПРОМТ                        │
-│ Лягушка должна оказаться на   │ ┌──────────────────────────┐ │
-│ кувшинке у правого края.      │ │ (многострочное поле)     │ │
-│                               │ └──────────────────────────┘ │
-│ ┌───────────────────────────┐ │          [ Отправить промт ] │
-│ │                           │ │                              │
-│ │      сцена (iframe)       │ │ КОД ОТ ИИ                    │
-│ │                           │ │ ┌──────────────────────────┐ │
-│ │                           │ │ │ #pond { … }              │ │
-│ └───────────────────────────┘ │ │ (Фаза 1: редактируемое)  │ │
-│                               │ └──────────────────────────┘ │
-│ Подсказка: опиши результат,   │            [ Запустить код ] │
-│ а не свойство.                │                              │
-│                               │ РЕЗУЛЬТАТ ПРОВЕРОК           │
-│                               │ [x] Лягушка находится на     │
-│                               │     кувшинке                 │
-│                               │     ожидалось центр (440,44) │
-│                               │     получено   центр (44,44) │
-└───────────────────────────────┴──────────────────────────────┘
-```
-
-- Сцена — **тот самый** sandbox-iframe: игрок видит именно то, что проверяет валидатор
-- Блок результата показывает каждую проверку отдельно, с описанием, ожидаемым и фактическим значением
-- При успехе — панель победы: попытки, время, очки, отметка личного рекорда, кнопки «Следующий уровень» и «К списку»
-- Кнопка «Сбросить уровень» возвращает сцену к исходному состоянию, обнуляет таймер и счётчик попыток текущей сессии
-- На узких экранах колонки становятся друг под другом
-
-### 13.4. Экран 4 — таблица лидеров
-
-- Две вкладки: «Общий зачёт» и «По уровню» с выбором уровня
-- Колонки: место, никнейм, попытки, время, очки
-- Строка текущего игрока подсвечивается
-
----
-
-## 14. Режим ручного ввода кода
-
-**Центральное решение Фазы 1**, позволяющее полностью проверить игру до подключения ИИ.
-
-| Поведение | Фаза 1: `ManualCodeEntry = true` | Фаза 2: `ManualCodeEntry = false` |
+| Поведение | `ManualCodeEntry = true` | `ManualCodeEntry = false` (текущее значение по умолчанию) |
 |---|---|---|
-| Поле промта | Видимо, заполняется по желанию, помечено как неактивное для оценки | Основной элемент ввода, обязательно |
-| Поле кода | **Редактируемое** — человек вписывает код сам | Только для чтения, заполняется ответом ИИ |
-| Кнопка «Отправить промт» | Скрыта или неактивна | Активна: вызывает `POST /api/attempts` и заполняет поле кода |
-| Кнопка «Запустить код» | Активна: проверяет содержимое поля кода | Скрыта — запуск автоматически после получения кода |
+| Поле промта | Основной элемент ввода, активно | То же |
+| Поле кода | Редактируемое — человек вписывает код сам | Только для чтения, заполняется ответом ИИ |
+| Кнопка «Отправить промт» | Скрыта/неактивна | Активна |
+| Кнопка «Запустить код» | Активна | Скрыта — запуск автоматический после получения кода |
 | Источник попытки | `source = "manual"` | `source = "ai"` |
-| Учёт попыток и времени | Работает полностью | Работает полностью |
 
-Флаг приходит на клиент вместе с ответом `POST /api/attempts` (поле `manualEntry`) и дополнительно доступен через `GET /api/levels`. Фронтенд **не содержит жёстко зашитого режима**: он читает флаг и настраивает интерфейс.
+При ошибке от сервера экран игры различает: `429` → «Слишком часто, подождите
+N секунд» (N — из `Retry-After`), `502` → «ИИ временно недоступен, попробуйте
+ещё раз» — в обоих случаях валидатор не запускается (сервер ничего не создал).
 
-> Не делать ручной ввод отдельной «тестовой страницей» и не прятать его за параметрами адресной строки. Это штатный режим работы приложения, управляемый конфигурацией.
+При старте приложение проверяет сохранённый в `localStorage` `playerId` на
+сервере (`GET /api/players/{id}`) и сбрасывает его локально, если сервер его
+не знает (например, после восстановления БД из бэкапа без этого игрока, или
+при переключении браузера между разными окружениями/базами) — без этого
+игрок застревал бы на ошибке «игрок не найден».
 
 ---
 
-## 15. Конфигурация
+## 11. Конфигурация
 
 ```jsonc
 // appsettings.json
 {
   "PromptQuest": {
-    "ManualCodeEntry": true,        // Фаза 1: поле кода редактируется вручную
+    "ManualCodeEntry": false,
     "LevelsFilePath": "Data/levels.json",
     "MaxPromptLength": 2000,
     "MaxCodeLength": 8000,
     "DefaultTolerancePx": 8,
     "DefaultTimeoutMs": 2000,
-    "LeaderboardTake": 20
+    "LeaderboardTake": 20,
+    "AiRequestTimeoutMs": 10000,
+    "AiRequestsPerMinutePerPlayer": 10
+  },
+  "Gemini": {
+    "Model": "<имя модели>"
+    // "ApiKey" задаётся через переменную окружения Gemini__ApiKey или
+    // dotnet user-secrets, не хранится в файле — см. раздел 12.
   }
+}
+
+// appsettings.Development.json — секции PromptQuest/Gemini здесь не задаются,
+// только Logging; секреты и строка подключения — через dotnet user-secrets.
+{
+  "Logging": { "LogLevel": { "Default": "Information", "Microsoft.AspNetCore": "Warning" } }
 }
 ```
 
-Секция читается в типизированный `AppOptions` через options pattern. **Никаких строк подключения к БД и никаких ключей API в конфигурации Фазы 1 быть не должно.**
+`ConnectionStrings:Default` не хранится в файлах конфигурации — только через
+`dotnet user-secrets` (разработка) или переменную окружения
+`ConnectionStrings__Default` (прод/CI); обязательна во всех окружениях без
+исключения — без неё `AddStorage` бросает `InvalidOperationException` ещё до
+`builder.Build()` (раздел 2.3).
+
+`Configuration/AppOptions.cs` содержит также свойство `GeminiModel`, которое
+сейчас не используется кодом генерации (`AiAgent` читает модель из `Gemini:Model`
+через `IConfiguration` напрямую, а не через `AppOptions`) — это несогласованность
+в текущей реализации, а не два равнозначных способа настройки.
 
 ---
 
-## 16. Безопасность
+## 12. Безопасность и секреты
 
-- Код игрока никогда не выполняется на сервере — только в sandbox-iframe в браузере игрока
-- iframe без `allow-same-origin`: изолирован от DOM, хранилищ и cookie приложения
-- Сторожевой таймер на родителе прерывает зависший прогон удалением iframe
-- Ограничения длины промта и кода на сервере (`MaxPromptLength`, `MaxCodeLength`)
-- Расчёт очков выполняется на сервере: клиент присылает только факт прохождения, время и попытки
-- Эндпоинты валидируют существование `playerId` и `levelId`; неизвестные идентификаторы дают 404
-
-**Осознанное ограничение:** поскольку проверка выполняется на клиенте, технически подкованный игрок может отправить фальшивый успешный результат. Для дипломного MVP это приемлемо. Серверная переверификация вынесена в Фазу 3.
+- Код, применяемый к сцене, никогда не выполняется на сервере — только в
+  sandbox-iframe в браузере игрока, без `allow-same-origin`.
+- Длина промта для рекорда считается на сервере из уже сохранённого
+  `Attempt.Prompt` — клиент не может повлиять на значение (раздел 8). Геометрию
+  сцены при этом проверяет только браузер игрока: сервер доверяет присланному
+  `passed` — переверификации на сервере нет (раздел 13).
+- `MaxPromptLength`/`MaxCodeLength` ограничивают длину промта и кода на сервере.
+- `AiRateLimiter` ограничивает число запросов к ИИ на `playerId` в минуту
+  (раздел 9) — защита от неконтролируемого расхода платной квоты Gemini.
+- Эндпоинты валидируют существование `playerId` и `levelId`; неизвестные
+  идентификаторы дают 404.
+- **Секреты (ключ Gemini API, строка подключения к БД) не должны храниться в
+  `appsettings*.json`** — только через переменные окружения или
+  `dotnet user-secrets`. На момент последнего аудита в `appsettings.json` был
+  обнаружен закоммиченный ключ Gemini API — это требует немедленной ротации
+  ключа и удаления секрета из текущего состояния репозитория и из истории git.
 
 ---
 
-## 17. Обработка ошибок и крайние случаи
+## 13. Обработка ошибок и крайние случаи
 
 | Ситуация | Поведение |
 |---|---|
-| Поле кода пустое | Попытка не засчитывается, подсказка «введите код» |
-| Синтаксическая ошибка CSS | Браузер игнорирует некорректные правила; проверки не проходят, игрок видит фактические значения |
-| Некорректный CSS-селектор (`selector`) | `querySelectorAll` бросает исключение; перехватывается, возвращается в `error` с понятным текстом |
-| Исключение в JS-коде игрока | Перехватывается `try/catch` раннера, текст показывается игроку; прогон = неудачная попытка |
-| Бесконечный цикл | Сторожевой таймер родителя удаляет iframe по `timeoutMs`, результат «превышено время выполнения» |
-| Код совпал с `forbiddenPatterns` | Прогон немедленно провален с пояснением, без выполнения |
-| Сервер недоступен при отправке результата | Результат показывается локально, отправка повторяется один раз; при повторной неудаче — предупреждение |
-| localStorage очищен | Игрок считается новым: экран ввода никнейма (ожидаемое поведение модели agar.io) |
-| Перезапуск сервера | Данные Фазы 1 теряются — прямое следствие in-memory хранилища; устраняется в Фазе 2 |
+| Поле кода пустое (ручной режим) | Попытка не засчитывается, подсказка «введите код» |
+| Промт пуст (после `Trim()`) | `AiAgent` возвращает `Success=false` без обращения к Gemini; попытка не создаётся |
+| Синтаксическая ошибка CSS | Браузер игнорирует некорректные правила; проверки не проходят |
+| Бесконечный цикл | Сторожевой таймер родителя удаляет iframe по `timeoutMs` |
+| Код совпал с `forbiddenPatterns` | Прогон немедленно провален, без выполнения |
+| ИИ не ответил / исключение / таймаут / пустой ответ | `GenerateAsync` возвращает `Success=false`, пустой `Code`, причину в `Error`; эндпоинт отвечает `502`, попытка не создаётся |
+| Превышен лимит запросов к ИИ на игрока | `429` с заголовком `Retry-After`; попытка не создаётся |
+| Сервер недоступен при отправке результата | Результат показывается локально; отправка не повторяется автоматически |
+| localStorage очищен или содержит неизвестный серверу `playerId` | Игрок считается новым / сбрасывается на экран ввода никнейма |
+| Перезапуск работающего приложения | Данные сохраняются — хранилище всегда PostgreSQL (раздел 2.3). In-memory хранилище существует только внутри тестового проекта и этого сценария не касается. |
 
 ---
 
-## 18. Критерии приёмки (Definition of Done)
+## 14. Известные ограничения и риски
 
-Фаза 1 выполнена, когда одновременно верно всё перечисленное.
-
-1. Решение открывается в Visual Studio, собирается и запускается одним нажатием, **без внешних зависимостей и без установки БД**
-2. На стартовом экране запрашивается никнейм; после ввода игрок попадает в список из 12 уровней
-3. Все 12 уровней из раздела 8 присутствуют в `Data/levels.json` и открываются без ошибок
-4. На экране игры сцена отображается в sandbox-iframe с `sandbox="allow-scripts"` и **без** `allow-same-origin`
-5. Поле кода редактируемое; введённый вручную корректный код проходит уровень, некорректный — не проходит
-6. **Каждый из 12 уровней реально проходится эталонным решением из раздела 8** — проверяется вручную для всех уровней
-7. Блок результата показывает каждую проверку с описанием, ожидаемым и фактическим значением
-8. Таймер идёт с момента открытия уровня, останавливается при успехе, ставится на паузу при скрытии вкладки
-9. Счётчик попыток увеличивается на каждый запуск, включая успешный и завершившийся ошибкой
-10. Очки считаются на сервере по формуле раздела 11.3
-11. Таблица лидеров по уровню и общая заполняются и корректно сортируются
-12. Бесконечный цикл в коде игрока не вешает страницу: срабатывает таймаут, интерфейс остаётся отзывчивым
-13. В решении отсутствуют пакеты и код, запрещённые разделом 3.2 — проверяется по `.csproj` и по отсутствию строк подключения
-14. Интерфейсы объявлены с сигнатурами раздела 4.4, зарегистрированы в DI; эндпоинты зависят только от них
-15. Все методы хранилищ и генератора кода асинхронны и принимают `CancellationToken`
-16. В `Endpoints/` и `Dtos/` нет ни одного LINQ-запроса к коллекциям хранилищ
-17. Прогресс игрока хранится как `ICollection<LevelProgress>`, каждый элемент имеет свой `Id` и `PlayerId`
-18. Смена `ManualCodeEntry` на `false` переводит поле кода в режим только для чтения и активирует кнопку отправки промта, не вызывая ошибок в интерфейсе
+- Нет CI-конфигурации и Dockerfile — тесты (раздел «Тесты» в `README.md`)
+  запускаются только вручную; браузерные тесты (`RunnerBrowserTests`) к тому же
+  требуют разового `playwright.ps1 install chromium` на машине до первого запуска.
+- Переверификация результата на сервере отсутствует: клиент сообщает
+  `passed` и список проверок, сервер им доверяет при обновлении рекорда.
+- Закоммиченный секрет Gemini API в `appsettings.json` (раздел 12) — приоритетный риск.
+- `Microsoft.Extensions.AI` — зависимость в `.csproj`, не используемая кодом;
+  `ManualCodeGenerationService` — реализация, больше не зарегистрированная в DI;
+  исторические поля `LevelProgress.BestAttempts/BestTimeMs/BestScore/TotalAttempts`
+  и `Attempt.ElapsedMs` остаются в схеме, но не вычисляются (раздел 8).
 
 ---
 
-## 19. Фаза 2 и Фаза 3
+## 15. Планы на будущее
 
-### 19.1. Фаза 2 — подключение БД и ИИ
-
-| Шаг | Объём работы |
-|---|---|
-| Добавить пакеты EF Core и SQL Server, создать `PromptQuestDbContext` | Новый файл + запись в `.csproj` |
-| Написать `SqlPlayerStore` и `SqlAttemptStore` по тем же интерфейсам | Два новых файла, существующие не трогаются |
-| Создать миграцию и базу | `dotnet ef migrations add` / `database update` |
-| Написать реализацию `ICodeGenerationService` поверх выбранного AI API | Один новый файл + очистка ответа модели от markdown |
-| Переключить регистрацию в `Program.cs` | Четыре строки |
-| Поставить `ManualCodeEntry = false` | Одна строка |
-
-Ни валидатор (`wwwroot/sandbox/`), ни экраны фронтенда, ни контракты HTTP API при этом **не изменяются**.
-
-Дополнительно в Фазе 2:
-- Ограничение частоты запросов по `playerId` — контроль расходов на вызовы модели
-- Сохранение промтов вместе с результатом: основной исследовательский материал дипломной работы
-
-### 19.2. Фаза 3 — развитие
-
-- Серверная переверификация прохождений (защита от подделки результата)
-- Уровни на компилируемых языках (C# и др.) через изолированную среду или внешний judge-сервис
-- Редактор уровней для преподавателя
-- Режим реального времени: несколько игроков проходят один уровень наперегонки
-- Аналитика промтов: средняя длина успешного промта, типичные ошибки формулировок
-
----
-
-## 20. Риски
-
-| Риск | Смягчение |
-|---|---|
-| Стоимость вызовов AI API растёт с числом попыток (Фаза 2) | Ограничение частоты по `playerId`, лимит длины промта, кеширование одинаковых промтов |
-| Модель возвращает код с пояснениями или в markdown | Слой очистки в реализации `ICodeGenerationService` + запрет на пояснения в системном промте |
-| Игрок просит ИИ «просто выведи готовые координаты» в обход задачи | Проверки на итоговую геометрию, а не на текст кода; `forbiddenPatterns`; формулировка цели от результата |
-| Выполнение стороннего JS в браузере игрока | sandbox без `allow-same-origin`, пересоздание iframe, сторожевой таймер |
-| Ложные провалы из-за измерения геометрии до пересчёта раскладки | Двойной `requestAnimationFrame` (раздел 9.4) |
-| Потеря данных при перезапуске сервера в Фазе 1 | Осознанное ограничение in-memory; снимается в Фазе 2 без изменения контрактов |
-| Подмена результата со стороны клиента | Расчёт очков на сервере; переверификация в Фазе 3 |
+- Ротация и вывод секретов из `appsettings.json` в переменные окружения /
+  secret-менеджер; очистка истории git от закоммиченных значений.
+- Серверная переверификация прохождений.
+- Редактор уровней для преподавателя (сейчас — только ручное редактирование
+  `Data/levels.json`).
+- Режим реального времени (несколько игроков на одном уровне).
+- Аналитика промтов (средняя длина успешного промта, типичные ошибки
+  формулировок) — `Attempt.Prompt` уже сохраняется, аналитики над этими
+  данными пока нет.
+- CI-конфигурация, запускающая `dotnet build`/`dotnet test` автоматически.
+- Удаление неиспользуемых зависимостей/классов (раздел 14).

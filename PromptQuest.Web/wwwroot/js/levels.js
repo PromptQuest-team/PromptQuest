@@ -1,6 +1,5 @@
 import { Api } from "./api.js";
 import { State } from "./state.js";
-import { formatMs } from "./timer.js";
 
 function escapeHtml(value) {
   const div = document.createElement("div");
@@ -36,9 +35,7 @@ export const LevelsScreen = {
 
         const categoryLabel = CATEGORY_LABELS[level.category] || level.category;
         const bestHtml = level.completed
-          ? `<div class="level-card-best">Лучшее: ${level.bestAttempts} поп., ${formatMs(
-              level.bestTimeMs
-            )}, ${level.bestScore} очк.</div>`
+          ? `<div class="level-card-best">Решено промтом из ${level.bestPromptLength} символов</div>`
           : "";
 
         card.innerHTML = `

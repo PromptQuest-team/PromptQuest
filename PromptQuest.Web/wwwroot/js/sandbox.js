@@ -51,6 +51,22 @@ export function runInSandbox(container, level, code) {
         return;
       }
 
+      if (msg.type === "RUN_RESULT" && msg.runId === runId && msg.size) {
+        // Каждый уровень определяет свой размер сцены в levels.json — раннер
+        // измеряет фактический размер и сообщает его здесь, вместо того
+        // чтобы держать один фиксированный размер iframe для всех уровней
+        // (иначе уровни меньше/больше этого размера показывают полосы
+        // чужого цвета или обрезаются).
+        iframe.style.width = `${msg.size.width}px`;
+        iframe.style.height = `${msg.size.height}px`;
+        if (msg.size.background) {
+          // Если после подгонки размера всё же остаётся край (например,
+          // из-за округления до целого пикселя), он того же цвета, что и
+          // сама сцена уровня, а не цвета iframe по умолчанию.
+          iframe.style.backgroundColor = msg.size.background;
+        }
+      }
+
       if (msg.type === "RUNNER_READY") {
         iframe.contentWindow.postMessage(
           {

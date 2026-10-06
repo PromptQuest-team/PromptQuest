@@ -1,19 +1,23 @@
- [
+[
   {
     "id": "css-01-justify",
     "order": 1,
     "category": "css",
     "title": "Доставь лягушку к кувшинке",
-    "goal": "Лягушка должна оказаться на кувшинке у правого края пруда.",
-    "hint": "Опиши ИИ не приём, а результат: где именно должна оказаться лягушка.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 1,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:400px;top:8px;width:72px;height:72px;background:#2f8f4e}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -34,16 +38,20 @@
     "order": 2,
     "category": "css",
     "title": "Опусти лягушку на дно пруда",
-    "goal": "Лягушка должна опуститься на кувшинку у нижнего края пруда.",
-    "hint": "Опиши, у какого края по вертикали должна оказаться лягушка.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 1,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:8px;top:180px;width:72px;height:72px;background:#2f8f4e}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -64,16 +72,20 @@
     "order": 3,
     "category": "css",
     "title": "Собери лягушку в центре пруда",
-    "goal": "Лягушка должна оказаться ровно в центре пруда.",
-    "hint": "Опиши положение и по горизонтали, и по вертикали одновременно.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 1,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:204px;top:94px;width:72px;height:72px;background:#2f8f4e}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -94,16 +106,20 @@
     "order": 4,
     "category": "css",
     "title": "Расставь лягушек по своим кувшинкам",
-    "goal": "Каждая лягушка должна оказаться на кувшинке своего цвета: порядок расположения кувшинок зеркальный по отношению к порядку лягушек.",
-    "hint": "Опиши, что видимый порядок лягушек должен быть развёрнут в обратную сторону.",
+    "goal": "Посади каждую лягушку на кувшинку её цвета.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 2,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;justify-content:space-between;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px}#frog-red{background:#e74c3c}#frog-green{background:#7ed957}#frog-blue{background:#4aa8ff}.lily{top:8px;width:72px;height:72px}#lily-red{background:#c0392b;left:400px}#lily-green{background:#2f8f4e;left:204px}#lily-blue{background:#1b5faa;left:8px}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;justify-content:space-between;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px}#frog-red{background:#e74c3c}#frog-green{background:#7ed957}#frog-blue{background:#4aa8ff}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -138,16 +154,20 @@
     "order": 5,
     "category": "css",
     "title": "Расставь лягушек равномерно",
-    "goal": "Три лягушки должны стоять равномерно по ширине пруда, крайние — вплотную к краям.",
-    "hint": "Опиши равные промежутки между лягушками и то, что крайние прижаты к границам.",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 2,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog-1\" class=\"frog\"></div><div id=\"frog-2\" class=\"frog\"></div><div id=\"frog-3\" class=\"frog\"></div><div id=\"lily-1\" class=\"lily\"></div><div id=\"lily-2\" class=\"lily\"></div><div id=\"lily-3\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px;background:#7ed957}.lily{top:8px;width:72px;height:72px;background:#2f8f4e}#lily-1{left:8px}#lily-2{left:204px}#lily-3{left:400px}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog-1\" class=\"frog\"></div><div id=\"frog-2\" class=\"frog\"></div><div id=\"frog-3\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -182,16 +202,20 @@
     "order": 6,
     "category": "css",
     "title": "Посади лягушку в нужную клетку",
-    "goal": "Лягушка должна попасть в правую нижнюю клетку сетки 3×3.",
-    "hint": "Опиши, в каком столбце и в какой строке сетки должна оказаться лягушка.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 2,
     "injectionMode": "styleAppend",
     "scene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div id=\"frog\" class=\"frog\"></div><div id=\"lily-target\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:316px;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:3;grid-row:1}#cell-4{grid-column:1;grid-row:2}#cell-5{grid-column:2;grid-row:2}#cell-6{grid-column:3;grid-row:2}#cell-7{grid-column:1;grid-row:3}#cell-8{grid-column:2;grid-row:3}#cell-9{grid-column:3;grid-row:3}#frog{width:56px;height:56px;background:#7ed957;grid-column:1;grid-row:1;align-self:center;justify-self:center}#lily-target{position:static;width:50px;height:50px;background:#2f8f4e;grid-column:3;grid-row:3;align-self:center;justify-self:center}"
+    },
+    "aiScene": {
       "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div id=\"frog\" class=\"frog\"></div></div>",
-      "baseCss": "#pond{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#frog{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}"
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:316px;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:3;grid-row:1}#cell-4{grid-column:1;grid-row:2}#cell-5{grid-column:2;grid-row:2}#cell-6{grid-column:3;grid-row:2}#cell-7{grid-column:1;grid-row:3}#cell-8{grid-column:2;grid-row:3}#cell-9{grid-column:3;grid-row:3}#frog{width:56px;height:56px;background:#7ed957;grid-column:1;grid-row:1;align-self:center;justify-self:center}"
     },
     "codeTemplate": "#frog {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -201,8 +225,292 @@
           "kind": "containedIn",
           "subject": "#frog",
           "target": "#cell-9",
-          "description": "Лягушка находится в правой нижней клетке"
+          "description": "Лягушка находится в клетке с кувшинкой"
         }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-07-two-spots",
+    "order": 7,
+    "category": "css",
+    "title": "Расставь двух лягушек по местам",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 2,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div class=\"cell\" id=\"cell-10\"></div><div class=\"cell\" id=\"cell-11\"></div><div class=\"cell\" id=\"cell-12\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:420px;grid-template-columns:repeat(4,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:3;grid-row:1}#cell-4{grid-column:4;grid-row:1}#cell-5{grid-column:1;grid-row:2}#cell-6{grid-column:2;grid-row:2}#cell-7{grid-column:3;grid-row:2}#cell-8{grid-column:4;grid-row:2}#cell-9{grid-column:1;grid-row:3}#cell-10{grid-column:2;grid-row:3}#cell-11{grid-column:3;grid-row:3}#cell-12{grid-column:4;grid-row:3}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-green{background:#7ed957;grid-column:1;grid-row:1}#frog-blue{background:#4aa8ff;grid-column:4;grid-row:1}.lily{position:static;width:72px;height:72px;align-self:center;justify-self:center}#lily-green{background:#2f8f4e;grid-column:3;grid-row:3}#lily-blue{background:#1b5faa;grid-column:2;grid-row:2}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div class=\"cell\" id=\"cell-10\"></div><div class=\"cell\" id=\"cell-11\"></div><div class=\"cell\" id=\"cell-12\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:420px;grid-template-columns:repeat(4,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:3;grid-row:1}#cell-4{grid-column:4;grid-row:1}#cell-5{grid-column:1;grid-row:2}#cell-6{grid-column:2;grid-row:2}#cell-7{grid-column:3;grid-row:2}#cell-8{grid-column:4;grid-row:2}#cell-9{grid-column:1;grid-row:3}#cell-10{grid-column:2;grid-row:3}#cell-11{grid-column:3;grid-row:3}#cell-12{grid-column:4;grid-row:3}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-green{background:#7ed957;grid-column:1;grid-row:1}#frog-blue{background:#4aa8ff;grid-column:4;grid-row:1}"
+    },
+    "codeTemplate": "#frog-green {\n  \n}\n\n#frog-blue {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "green-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-green",
+          "target": "#lily-green",
+          "description": "Зелёная лягушка на своей кувшинке"
+        },
+        {
+          "id": "blue-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-blue",
+          "target": "#lily-blue",
+          "description": "Синяя лягушка на своей кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-08-big-lily",
+    "order": 8,
+    "category": "css",
+    "title": "Большая кувшинка на двоих",
+    "goal": "Посади обе лягушки на большую кувшинку так, чтобы они не перекрывали друг друга.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog-1\" class=\"frog\"></div><div id=\"frog-2\" class=\"frog\"></div><div id=\"lily-zone\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:316px;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-1{background:#7ed957;grid-column:3;grid-row:1}#frog-2{background:#4aa8ff;grid-column:3;grid-row:2}#lily-zone{position:static;background:#f4c430;grid-column:1 / span 2;grid-row:1 / span 2}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog-1\" class=\"frog\"></div><div id=\"frog-2\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:316px;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-1{background:#7ed957;grid-column:3;grid-row:1}#frog-2{background:#4aa8ff;grid-column:3;grid-row:2}"
+    },
+    "codeTemplate": "#frog-1 {\n  \n}\n\n#frog-2 {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "frog-1-in-lily-zone",
+          "kind": "containedIn",
+          "subject": "#frog-1",
+          "target": "#lily-zone",
+          "description": "Первая лягушка на большой кувшинке"
+        },
+        {
+          "id": "frog-2-in-lily-zone",
+          "kind": "containedIn",
+          "subject": "#frog-2",
+          "target": "#lily-zone",
+          "description": "Вторая лягушка на большой кувшинке"
+        },
+        {
+          "id": "frogs-no-overlap",
+          "kind": "noOverlap",
+          "subject": "#frog-1",
+          "target": "#frog-2",
+          "description": "Лягушки не перекрывают друг друга"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-09-two-ponds",
+    "order": 9,
+    "category": "css",
+    "title": "Два пруда — два задания",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"grid-a\"><div class=\"cell\" id=\"cell-a1\"></div><div class=\"cell\" id=\"cell-a2\"></div><div class=\"cell\" id=\"cell-a3\"></div><div class=\"cell\" id=\"cell-a4\"></div><div id=\"frog-a\" class=\"frog\"></div><div id=\"lily-a\" class=\"lily\"></div></div><div id=\"grid-b\"><div class=\"cell\" id=\"cell-b1\"></div><div class=\"cell\" id=\"cell-b2\"></div><div class=\"cell\" id=\"cell-b3\"></div><div class=\"cell\" id=\"cell-b4\"></div><div class=\"cell\" id=\"cell-b5\"></div><div class=\"cell\" id=\"cell-b6\"></div><div class=\"cell\" id=\"cell-b7\"></div><div class=\"cell\" id=\"cell-b8\"></div><div class=\"cell\" id=\"cell-b9\"></div><div id=\"frog-b\" class=\"frog\"></div><div id=\"lily-b\" class=\"lily\"></div></div></div>",
+      "baseCss": "#pond{display:flex;width:394px;gap:16px;align-items:flex-start;background:#1b3a4b}#grid-a{display:grid;grid-template-columns:repeat(2,70px);grid-template-rows:repeat(2,70px);gap:4px;background:#1b3a4b;padding:4px}#grid-b{display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(3,70px);gap:4px;background:#1b3a4b;padding:4px}.cell{background:#234b5e}#cell-a1{grid-column:1;grid-row:1}#cell-a2{grid-column:2;grid-row:1}#cell-a3{grid-column:1;grid-row:2}#cell-a4{grid-column:2;grid-row:2}#cell-b1{grid-column:1;grid-row:1}#cell-b2{grid-column:2;grid-row:1}#cell-b3{grid-column:3;grid-row:1}#cell-b4{grid-column:1;grid-row:2}#cell-b5{grid-column:2;grid-row:2}#cell-b6{grid-column:3;grid-row:2}#cell-b7{grid-column:1;grid-row:3}#cell-b8{grid-column:2;grid-row:3}#cell-b9{grid-column:3;grid-row:3}#frog-a,#frog-b{width:56px;height:56px;background:#7ed957;grid-column:1;grid-row:1;align-self:center;justify-self:center}#lily-a,#lily-b{position:static;width:50px;height:50px;background:#2f8f4e;grid-column:2;grid-row:2;align-self:center;justify-self:center}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"grid-a\"><div class=\"cell\" id=\"cell-a1\"></div><div class=\"cell\" id=\"cell-a2\"></div><div class=\"cell\" id=\"cell-a3\"></div><div class=\"cell\" id=\"cell-a4\"></div><div id=\"frog-a\" class=\"frog\"></div></div><div id=\"grid-b\"><div class=\"cell\" id=\"cell-b1\"></div><div class=\"cell\" id=\"cell-b2\"></div><div class=\"cell\" id=\"cell-b3\"></div><div class=\"cell\" id=\"cell-b4\"></div><div class=\"cell\" id=\"cell-b5\"></div><div class=\"cell\" id=\"cell-b6\"></div><div class=\"cell\" id=\"cell-b7\"></div><div class=\"cell\" id=\"cell-b8\"></div><div class=\"cell\" id=\"cell-b9\"></div><div id=\"frog-b\" class=\"frog\"></div></div></div>",
+      "baseCss": "#pond{display:flex;width:394px;gap:16px;align-items:flex-start;background:#1b3a4b}#grid-a{display:grid;grid-template-columns:repeat(2,70px);grid-template-rows:repeat(2,70px);gap:4px;background:#1b3a4b;padding:4px}#grid-b{display:grid;grid-template-columns:repeat(3,70px);grid-template-rows:repeat(3,70px);gap:4px;background:#1b3a4b;padding:4px}.cell{background:#234b5e}#cell-a1{grid-column:1;grid-row:1}#cell-a2{grid-column:2;grid-row:1}#cell-a3{grid-column:1;grid-row:2}#cell-a4{grid-column:2;grid-row:2}#cell-b1{grid-column:1;grid-row:1}#cell-b2{grid-column:2;grid-row:1}#cell-b3{grid-column:3;grid-row:1}#cell-b4{grid-column:1;grid-row:2}#cell-b5{grid-column:2;grid-row:2}#cell-b6{grid-column:3;grid-row:2}#cell-b7{grid-column:1;grid-row:3}#cell-b8{grid-column:2;grid-row:3}#cell-b9{grid-column:3;grid-row:3}#frog-a,#frog-b{width:56px;height:56px;background:#7ed957;grid-column:1;grid-row:1;align-self:center;justify-self:center}"
+    },
+    "codeTemplate": "#frog-a {\n  \n}\n\n#frog-b {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "a-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-a",
+          "target": "#cell-a4",
+          "description": "Первая лягушка находится в клетке с кувшинкой"
+        },
+        {
+          "id": "b-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-b",
+          "target": "#cell-b5",
+          "description": "Вторая лягушка находится в клетке с кувшинкой"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-10-four-colors",
+    "order": 10,
+    "category": "css",
+    "title": "Четыре лягушки, четыре кувшинки",
+    "goal": "Посади каждую лягушку на кувшинку её цвета.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"lily-yellow\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:420px;grid-template-columns:repeat(4,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:1;grid-row:2}#cell-4{grid-column:2;grid-row:2}.frog{width:56px;height:56px;grid-row:3;align-self:center;justify-self:center}#frog-yellow{background:#f4d03f;grid-column:1}#frog-green{background:#7ed957;grid-column:2}#frog-blue{background:#4aa8ff;grid-column:3}#frog-red{background:#e74c3c;grid-column:4}.lily{position:static;width:50px;height:50px;align-self:center;justify-self:center}#lily-yellow{background:#d4ac0d;grid-column:1;grid-row:1}#lily-green{background:#2f8f4e;grid-column:2;grid-row:1}#lily-red{background:#c0392b;grid-column:1;grid-row:2}#lily-blue{background:#1b5faa;grid-column:2;grid-row:2}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:420px;grid-template-columns:repeat(4,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:1;grid-row:2}#cell-4{grid-column:2;grid-row:2}.frog{width:56px;height:56px;grid-row:3;align-self:center;justify-self:center}#frog-yellow{background:#f4d03f;grid-column:1}#frog-green{background:#7ed957;grid-column:2}#frog-blue{background:#4aa8ff;grid-column:3}#frog-red{background:#e74c3c;grid-column:4}"
+    },
+    "codeTemplate": "#frog-red {\n  \n}\n\n#frog-green {\n  \n}\n\n#frog-blue {\n  \n}\n\n#frog-yellow {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "yellow-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-yellow",
+          "target": "#cell-1",
+          "description": "Жёлтая лягушка находится в клетке со своей кувшинкой"
+        },
+        {
+          "id": "green-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-green",
+          "target": "#cell-2",
+          "description": "Зелёная лягушка находится в клетке со своей кувшинкой"
+        },
+        {
+          "id": "red-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-red",
+          "target": "#cell-3",
+          "description": "Красная лягушка находится в клетке со своей кувшинкой"
+        },
+        {
+          "id": "blue-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-blue",
+          "target": "#cell-4",
+          "description": "Синяя лягушка находится в клетке со своей кувшинкой"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-11-shift",
+    "order": 11,
+    "category": "css",
+    "title": "Сдвиг",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div class=\"hcell\" id=\"corner\"></div><div class=\"hcell\" id=\"col-A\">A</div><div class=\"hcell\" id=\"col-B\">B</div><div class=\"hcell\" id=\"col-C\">C</div><div class=\"hcell\" id=\"col-D\">D</div><div class=\"hcell\" id=\"col-E\">E</div><div class=\"hcell\" id=\"col-F\">F</div><div class=\"hcell\" id=\"col-G\">G</div><div class=\"hcell\" id=\"col-H\">H</div><div class=\"hcell\" id=\"row-1\">1</div><div class=\"hcell\" id=\"row-2\">2</div><div class=\"hcell\" id=\"row-3\">3</div><div class=\"hcell\" id=\"row-4\">4</div><div class=\"hcell\" id=\"row-5\">5</div><div class=\"hcell\" id=\"row-6\">6</div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-orange\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-purple\" class=\"frog\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-orange\" class=\"lily\"></div><div id=\"lily-yellow\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div><div id=\"lily-purple\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;width:396px;grid-template-columns:repeat(9,44px);grid-template-rows:repeat(7,44px);gap:0;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:44px 44px;position:relative}.hcell{display:flex;align-items:center;justify-content:center;color:#cfe3ee;font:600 14px/1 monospace;background:rgba(255,255,255,0.06)}#corner{grid-column:1;grid-row:1}#col-A{grid-column:2;grid-row:1}#col-B{grid-column:3;grid-row:1}#col-C{grid-column:4;grid-row:1}#col-D{grid-column:5;grid-row:1}#col-E{grid-column:6;grid-row:1}#col-F{grid-column:7;grid-row:1}#col-G{grid-column:8;grid-row:1}#col-H{grid-column:9;grid-row:1}#row-1{grid-column:1;grid-row:2}#row-2{grid-column:1;grid-row:3}#row-3{grid-column:1;grid-row:4}#row-4{grid-column:1;grid-row:5}#row-5{grid-column:1;grid-row:6}#row-6{grid-column:1;grid-row:7}.frog{width:32px;height:32px;align-self:center;justify-self:center}#frog-red{background:#e74c3c;grid-column:2;grid-row:2}#frog-blue{background:#4aa8ff;grid-column:4;grid-row:2}#frog-yellow{background:#f4d03f;grid-column:3;grid-row:4}#frog-green{background:#2ecc71;grid-column:6;grid-row:3}#frog-purple{background:#9b59b6;grid-column:5;grid-row:5}#frog-orange{background:#e67e22;grid-column:2;grid-row:5}.lily{position:static;width:40px;height:40px;align-self:center;justify-self:center}#lily-red{background:#c0392b;grid-column:5;grid-row:4}#lily-blue{background:#1b5faa;grid-column:7;grid-row:4}#lily-yellow{background:#d4ac0d;grid-column:6;grid-row:6}#lily-green{background:#1e8449;grid-column:9;grid-row:5}#lily-purple{background:#6c3483;grid-column:8;grid-row:7}#lily-orange{background:#a84300;grid-column:5;grid-row:7}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div class=\"hcell\" id=\"corner\"></div><div class=\"hcell\" id=\"col-A\">A</div><div class=\"hcell\" id=\"col-B\">B</div><div class=\"hcell\" id=\"col-C\">C</div><div class=\"hcell\" id=\"col-D\">D</div><div class=\"hcell\" id=\"col-E\">E</div><div class=\"hcell\" id=\"col-F\">F</div><div class=\"hcell\" id=\"col-G\">G</div><div class=\"hcell\" id=\"col-H\">H</div><div class=\"hcell\" id=\"row-1\">1</div><div class=\"hcell\" id=\"row-2\">2</div><div class=\"hcell\" id=\"row-3\">3</div><div class=\"hcell\" id=\"row-4\">4</div><div class=\"hcell\" id=\"row-5\">5</div><div class=\"hcell\" id=\"row-6\">6</div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-orange\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-purple\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;width:396px;grid-template-columns:repeat(9,44px);grid-template-rows:repeat(7,44px);gap:0;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:44px 44px;position:relative}.hcell{display:flex;align-items:center;justify-content:center;color:#cfe3ee;font:600 14px/1 monospace;background:rgba(255,255,255,0.06)}#corner{grid-column:1;grid-row:1}#col-A{grid-column:2;grid-row:1}#col-B{grid-column:3;grid-row:1}#col-C{grid-column:4;grid-row:1}#col-D{grid-column:5;grid-row:1}#col-E{grid-column:6;grid-row:1}#col-F{grid-column:7;grid-row:1}#col-G{grid-column:8;grid-row:1}#col-H{grid-column:9;grid-row:1}#row-1{grid-column:1;grid-row:2}#row-2{grid-column:1;grid-row:3}#row-3{grid-column:1;grid-row:4}#row-4{grid-column:1;grid-row:5}#row-5{grid-column:1;grid-row:6}#row-6{grid-column:1;grid-row:7}.frog{width:32px;height:32px;align-self:center;justify-self:center}#frog-red{background:#e74c3c;grid-column:2;grid-row:2}#frog-blue{background:#4aa8ff;grid-column:4;grid-row:2}#frog-yellow{background:#f4d03f;grid-column:3;grid-row:4}#frog-green{background:#2ecc71;grid-column:6;grid-row:3}#frog-purple{background:#9b59b6;grid-column:5;grid-row:5}#frog-orange{background:#e67e22;grid-column:2;grid-row:5}"
+    },
+    "codeTemplate": "#frog-red {\n  \n}\n\n#frog-orange {\n  \n}\n\n#frog-yellow {\n  \n}\n\n#frog-green {\n  \n}\n\n#frog-blue {\n  \n}\n\n#frog-purple {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        { "id": "red-on-lily", "kind": "overlapCenter", "subject": "#frog-red", "target": "#lily-red", "description": "Красная лягушка на своей кувшинке" },
+        { "id": "orange-on-lily", "kind": "overlapCenter", "subject": "#frog-orange", "target": "#lily-orange", "description": "Оранжевая лягушка на своей кувшинке" },
+        { "id": "yellow-on-lily", "kind": "overlapCenter", "subject": "#frog-yellow", "target": "#lily-yellow", "description": "Жёлтая лягушка на своей кувшинке" },
+        { "id": "green-on-lily", "kind": "overlapCenter", "subject": "#frog-green", "target": "#lily-green", "description": "Зелёная лягушка на своей кувшинке" },
+        { "id": "blue-on-lily", "kind": "overlapCenter", "subject": "#frog-blue", "target": "#lily-blue", "description": "Синяя лягушка на своей кувшинке" },
+        { "id": "purple-on-lily", "kind": "overlapCenter", "subject": "#frog-purple", "target": "#lily-purple", "description": "Фиолетовая лягушка на своей кувшинке" }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-12-rainbow",
+    "order": 12,
+    "category": "css",
+    "title": "Радуга",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div class=\"hcell\" id=\"corner\"></div><div class=\"hcell\" id=\"col-A\">A</div><div class=\"hcell\" id=\"col-B\">B</div><div class=\"hcell\" id=\"col-C\">C</div><div class=\"hcell\" id=\"col-D\">D</div><div class=\"hcell\" id=\"col-E\">E</div><div class=\"hcell\" id=\"col-F\">F</div><div class=\"hcell\" id=\"row-1\">1</div><div class=\"hcell\" id=\"row-2\">2</div><div class=\"hcell\" id=\"row-3\">3</div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"frog-purple\" class=\"frog\"></div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-orange\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-orange\" class=\"lily\"></div><div id=\"lily-yellow\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div><div id=\"lily-purple\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;width:308px;grid-template-columns:repeat(7,44px);grid-template-rows:repeat(4,44px);gap:0;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:44px 44px;position:relative}.hcell{display:flex;align-items:center;justify-content:center;color:#cfe3ee;font:600 14px/1 monospace;background:rgba(255,255,255,0.06)}#corner{grid-column:1;grid-row:1}#col-A{grid-column:2;grid-row:1}#col-B{grid-column:3;grid-row:1}#col-C{grid-column:4;grid-row:1}#col-D{grid-column:5;grid-row:1}#col-E{grid-column:6;grid-row:1}#col-F{grid-column:7;grid-row:1}#row-1{grid-column:1;grid-row:2}#row-2{grid-column:1;grid-row:3}#row-3{grid-column:1;grid-row:4}.frog{width:32px;height:32px;align-self:center;justify-self:center}#frog-yellow{background:#f4d03f;grid-column:2;grid-row:2}#frog-purple{background:#9b59b6;grid-column:3;grid-row:2}#frog-red{background:#e74c3c;grid-column:4;grid-row:2}#frog-blue{background:#4aa8ff;grid-column:5;grid-row:2}#frog-orange{background:#e67e22;grid-column:6;grid-row:2}#frog-green{background:#2ecc71;grid-column:7;grid-row:2}.lily{position:static;width:40px;height:40px;align-self:center;justify-self:center}#lily-red{background:#c0392b;grid-column:2;grid-row:4}#lily-orange{background:#a84300;grid-column:3;grid-row:4}#lily-yellow{background:#d4ac0d;grid-column:4;grid-row:4}#lily-green{background:#1e8449;grid-column:5;grid-row:4}#lily-blue{background:#1b5faa;grid-column:6;grid-row:4}#lily-purple{background:#6c3483;grid-column:7;grid-row:4}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div class=\"hcell\" id=\"corner\"></div><div class=\"hcell\" id=\"col-A\">A</div><div class=\"hcell\" id=\"col-B\">B</div><div class=\"hcell\" id=\"col-C\">C</div><div class=\"hcell\" id=\"col-D\">D</div><div class=\"hcell\" id=\"col-E\">E</div><div class=\"hcell\" id=\"col-F\">F</div><div class=\"hcell\" id=\"row-1\">1</div><div class=\"hcell\" id=\"row-2\">2</div><div class=\"hcell\" id=\"row-3\">3</div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"frog-purple\" class=\"frog\"></div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-orange\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;width:308px;grid-template-columns:repeat(7,44px);grid-template-rows:repeat(4,44px);gap:0;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:44px 44px;position:relative}.hcell{display:flex;align-items:center;justify-content:center;color:#cfe3ee;font:600 14px/1 monospace;background:rgba(255,255,255,0.06)}#corner{grid-column:1;grid-row:1}#col-A{grid-column:2;grid-row:1}#col-B{grid-column:3;grid-row:1}#col-C{grid-column:4;grid-row:1}#col-D{grid-column:5;grid-row:1}#col-E{grid-column:6;grid-row:1}#col-F{grid-column:7;grid-row:1}#row-1{grid-column:1;grid-row:2}#row-2{grid-column:1;grid-row:3}#row-3{grid-column:1;grid-row:4}.frog{width:32px;height:32px;align-self:center;justify-self:center}#frog-yellow{background:#f4d03f;grid-column:2;grid-row:2}#frog-purple{background:#9b59b6;grid-column:3;grid-row:2}#frog-red{background:#e74c3c;grid-column:4;grid-row:2}#frog-blue{background:#4aa8ff;grid-column:5;grid-row:2}#frog-orange{background:#e67e22;grid-column:6;grid-row:2}#frog-green{background:#2ecc71;grid-column:7;grid-row:2}"
+    },
+    "codeTemplate": "#frog-red {\n  \n}\n\n#frog-orange {\n  \n}\n\n#frog-yellow {\n  \n}\n\n#frog-green {\n  \n}\n\n#frog-blue {\n  \n}\n\n#frog-purple {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        { "id": "red-on-lily", "kind": "overlapCenter", "subject": "#frog-red", "target": "#lily-red", "description": "Красная лягушка на своей кувшинке" },
+        { "id": "orange-on-lily", "kind": "overlapCenter", "subject": "#frog-orange", "target": "#lily-orange", "description": "Оранжевая лягушка на своей кувшинке" },
+        { "id": "yellow-on-lily", "kind": "overlapCenter", "subject": "#frog-yellow", "target": "#lily-yellow", "description": "Жёлтая лягушка на своей кувшинке" },
+        { "id": "green-on-lily", "kind": "overlapCenter", "subject": "#frog-green", "target": "#lily-green", "description": "Зелёная лягушка на своей кувшинке" },
+        { "id": "blue-on-lily", "kind": "overlapCenter", "subject": "#frog-blue", "target": "#lily-blue", "description": "Синяя лягушка на своей кувшинке" },
+        { "id": "purple-on-lily", "kind": "overlapCenter", "subject": "#frog-purple", "target": "#lily-purple", "description": "Фиолетовая лягушка на своей кувшинке" }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-13-rotate",
+    "order": 13,
+    "category": "css",
+    "title": "Поворот",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-purple\" class=\"frog\"></div><div id=\"frog-orange\" class=\"frog\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div><div id=\"lily-yellow\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-purple\" class=\"lily\"></div><div id=\"lily-orange\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;width:264px;grid-template-columns:repeat(6,44px);grid-template-rows:repeat(6,44px);gap:0;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:44px 44px;position:relative}.frog{width:32px;height:32px;align-self:center;justify-self:center}#frog-red{background:#e74c3c;grid-column:1;grid-row:1}#frog-blue{background:#4aa8ff;grid-column:3;grid-row:2}#frog-yellow{background:#f4d03f;grid-column:2;grid-row:4}#frog-green{background:#2ecc71;grid-column:5;grid-row:1}#frog-purple{background:#9b59b6;grid-column:6;grid-row:3}#frog-orange{background:#e67e22;grid-column:4;grid-row:4}.lily{position:static;width:40px;height:40px;align-self:center;justify-self:center}#lily-red{background:#c0392b;grid-column:6;grid-row:6}#lily-blue{background:#1b5faa;grid-column:4;grid-row:5}#lily-yellow{background:#d4ac0d;grid-column:5;grid-row:3}#lily-green{background:#1e8449;grid-column:2;grid-row:6}#lily-purple{background:#6c3483;grid-column:1;grid-row:4}#lily-orange{background:#a84300;grid-column:3;grid-row:3}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-purple\" class=\"frog\"></div><div id=\"frog-orange\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;width:264px;grid-template-columns:repeat(6,44px);grid-template-rows:repeat(6,44px);gap:0;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:44px 44px;position:relative}.frog{width:32px;height:32px;align-self:center;justify-self:center}#frog-red{background:#e74c3c;grid-column:1;grid-row:1}#frog-blue{background:#4aa8ff;grid-column:3;grid-row:2}#frog-yellow{background:#f4d03f;grid-column:2;grid-row:4}#frog-green{background:#2ecc71;grid-column:5;grid-row:1}#frog-purple{background:#9b59b6;grid-column:6;grid-row:3}#frog-orange{background:#e67e22;grid-column:4;grid-row:4}"
+    },
+    "codeTemplate": "#frog-red {\n  \n}\n\n#frog-orange {\n  \n}\n\n#frog-yellow {\n  \n}\n\n#frog-green {\n  \n}\n\n#frog-blue {\n  \n}\n\n#frog-purple {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        { "id": "red-on-lily", "kind": "overlapCenter", "subject": "#frog-red", "target": "#lily-red", "description": "Красная лягушка на своей кувшинке" },
+        { "id": "orange-on-lily", "kind": "overlapCenter", "subject": "#frog-orange", "target": "#lily-orange", "description": "Оранжевая лягушка на своей кувшинке" },
+        { "id": "yellow-on-lily", "kind": "overlapCenter", "subject": "#frog-yellow", "target": "#lily-yellow", "description": "Жёлтая лягушка на своей кувшинке" },
+        { "id": "green-on-lily", "kind": "overlapCenter", "subject": "#frog-green", "target": "#lily-green", "description": "Зелёная лягушка на своей кувшинке" },
+        { "id": "blue-on-lily", "kind": "overlapCenter", "subject": "#frog-blue", "target": "#lily-blue", "description": "Синяя лягушка на своей кувшинке" },
+        { "id": "purple-on-lily", "kind": "overlapCenter", "subject": "#frog-purple", "target": "#lily-purple", "description": "Фиолетовая лягушка на своей кувшинке" }
       ]
     },
     "forbiddenPatterns": []
