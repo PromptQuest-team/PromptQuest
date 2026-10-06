@@ -334,11 +334,17 @@ function measureSceneSize() {
   const pond = document.getElementById("pond");
   if (pond) {
     const r = pond.getBoundingClientRect();
-    return { width: Math.ceil(r.width), height: Math.ceil(r.height) };
+    // Фон сцены измеряется и отдаётся родителю вместе с размером — если
+    // размер определён на долю пикселя неточно (округление/sub-pixel layout)
+    // и всё же остаётся край, он того же цвета, что и сама сцена, а не
+    // произвольного цвета iframe по умолчанию.
+    const background = getComputedStyle(pond).backgroundColor;
+    return { width: Math.ceil(r.width), height: Math.ceil(r.height), background };
   }
   return {
     width: document.documentElement.scrollWidth,
     height: document.documentElement.scrollHeight,
+    background: null,
   };
 }
 
