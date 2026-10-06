@@ -386,10 +386,14 @@ async function runChecks(msg) {
   for (const check of checks) {
     const fn = CHECKS[check.kind];
     if (!fn) {
+      // Перечисляем известные виды в самом сообщении: если его тут нет, а в
+      // levels.json он есть — это почти всегда означает, что браузер
+      // выполняет устаревшую (закэшированную) копию этого файла, а не
+      // настоящую ошибку конфигурации уровня.
       return {
         passed: false,
         checks: results,
-        error: `Неизвестный вид проверки: ${check.kind}`,
+        error: `Неизвестный вид проверки: ${check.kind} (известные виды: ${Object.keys(CHECKS).join(", ")})`,
         size,
       };
     }

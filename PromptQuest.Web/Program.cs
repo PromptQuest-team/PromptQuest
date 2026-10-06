@@ -48,7 +48,22 @@ if (app.Environment.IsDevelopment() && !useInMemoryStorage)
 }
 
 app.UseDefaultFiles();
-app.UseStaticFiles();
+// Without this, a browser can keep serving a cached copy of a static file
+// (runner.html/runner.js in particular - each sandbox run re-requests them
+// via a fresh iframe navigation, a real HTTP request, not an ES-module
+// import) indefinitely without ever checking the server again, so an actual
+// server-side fix can look like it "didn't happen" in a browser that already
+// has an old copy cached. no-cache forces revalidation (a cheap conditional
+// GET with ETag/Last-Modified) on every request instead of trusting a
+// previous cached copy, so a real change is always picked up on the very
+// next request, in any browser.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "no-cache";
+    },
+});
 
 app.MapPlayerEndpoints();
 app.MapLevelEndpoints();
