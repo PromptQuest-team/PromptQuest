@@ -68,22 +68,43 @@ prompt-инжинирингу. Игрок видит сцену и коротк�
 
 ### 2.3. Выбор реализации хранилищ
 
-`Program.cs` вычисляет `useInMemoryStorage` (окружение `Development` **и**
-`PromptQuest:UseInMemoryStorage` включён — так в `appsettings.Development.json`)
-и передаёт его вместе со строкой подключения в
-`StorageRegistration.AddStorage(services, useInMemoryStorage, connectionString)`
-(`Services/Storage/StorageRegistration.cs`). Метод регистрирует **ровно одну**
-реализацию `IPlayerStore`/`IAttemptStore`/`ILeaderboardService` на вызов:
-in-memory (`Services/Storage/InMemory/`) либо EF/Postgres
-(`Services/Storage/Db/`, после проверки, что строка подключения задаёт
-непустые `Host`, `Database`, `Username`). Выбор и обе ветки проверены тестом
+`Program.cs` всегда вызывает
+`StorageRegistration.AddStorage(services, useInMemoryStorage: false, connectionString)`
+(`Services/Storage/StorageRegistration.cs`) — одинаково во всех окружениях,
+включая `Development`. Метод регистрирует **ровно одну** реализацию
+`IPlayerStore`/`IAttemptStore`/`ILeaderboardService` на вызов: in-memory
+(`Services/Storage/InMemory/`) либо EF/Postgres (`Services/Storage/Db/`, после
+проверки, что строка подключения задаёт непустые `Host`, `Database`,
+`Username` — иначе `InvalidOperationException` с понятным сообщением ещё до
+`builder.Build()`). Обе ветки проверены тестом
 (`PromptQuest.Web.Tests/ApiIntegrationTests.AddStorage_SelectsLeaderboardServiceByConfiguration`)
-напрямую на `IServiceCollection`, без поднятия хоста целиком.
+напрямую на `IServiceCollection`, без поднятия хоста целиком — но из
+`Program.cs` достижима только ветка EF/Postgres; in-memory параметр метода
+существует для тестов, а не как переключатель приложения.
 
-Логика вынесена из `Program.cs` в отдельный тестируемый метод умышленно:
-top-level statements в `Program.cs` читают конфигурацию синхронно при старте,
-до того как тестовый хост успел бы подставить свою — тестировать ветвление
-через `WebApplicationFactory` для такого кода не получится.
+После `builder.Build()`, если `app.Environment.IsDevelopment()`, приложение
+само накатывает миграции (`AppDbContext.Database.Migrate()` в отдельном
+`IServiceScope`) — в `Development` нет отдельного шага деплоя, который бы это
+сделал. Production/Staging ожидаемо накатывают миграции как часть своего
+процесса деплоя (`dotnet ef database update`, раздел «Запуск локально» в
+`README.md`), поэтому `Program.cs` не делает этого вне `Development`.
+
+Логика выбора хранилища вынесена из `Program.cs` в отдельный тестируемый метод
+умышленно: top-level statements в `Program.cs` читают конфигурацию
+(`ConnectionStrings:Default`) синхронно при старте, до того как тестовый хост
+успел бы подставить свою — тестировать ветвление через `WebApplicationFactory`
+для такого кода не получится. По той же причине тестовая фабрика
+(`PromptQuest.Web.Tests/PromptQuestWebFactory.cs`) не может «уговорить»
+`Program.cs` выбрать in-memory через конфигурацию: вместо этого она
+подставляет синтаксически валидную, но нерабочую строку подключения через
+переменную окружения `ConnectionStrings__Default` (видна уже на этапе
+`WebApplication.CreateBuilder`, в отличие от конфигурации, подставляемой
+позже), запускает хост под окружением `Testing` (не `Development` — иначе
+`Database.Migrate()` попытался бы реально подключиться по этой строке) и
+затем в `ConfigureServices` заменяет `IPlayerStore`/`IAttemptStore`/
+`ILeaderboardService`, зарегистрированные `Program.cs`, на in-memory —
+регистрация к этому моменту ещё не финализирована, так что замена проходит
+штатно, без повторного запуска ветвления.
 
 ### 2.4. Контракт хранилищ и генератора кода
 
@@ -269,7 +290,7 @@ BestPromptLength)` для лидерборда; удаление игрока к
 
 ## 5. Каталог уровней
 
-Все 10 уровней — только про лягушек и кувшинки внутри `#pond` (flex- или
+Все 13 уровней — только про лягушек и кувшинки внутри `#pond` (flex- или
 grid-контейнер). `goal`/`hint` не называют положение цели, направление,
 число или CSS-свойство (`SPEC-ADDENDUM-01.md`); `aiScene` каждого уровня не
 содержит кувшинок и данных о положении цели (`SPEC-ADDENDUM-02.md`) — оба
@@ -283,10 +304,13 @@ grid-контейнер). `goal`/`hint` не называют положение
 | `css-04-reverse` | Три лягушки на кувшинках своего цвета, зеркальный порядок | 3 × `overlapCenter` |
 | `css-05-spread` | Три лягушки равномерно по ширине, крайние у краёв | 3 × `overlapCenter` |
 | `css-06-grid` | Сетка 3×3, кувшинка в одной клетке | `containedIn(#frog,#cell-9)` |
-| `css-07-two-spots` | Две лягушки, у каждой кувшинка в своей точке пруда | 2 × `overlapCenter` |
-| `css-08-big-lily` | Кувшинка, занимающая 2×2 клетки сетки 3×3 | `containedIn(#frog,#lily-zone)` |
+| `css-07-two-spots` | Две лягушки, у каждой кувшинка в своей точке пруда; поле несёт нейтральную координатную сетку-landmark (разрешена в `aiScene`) | 2 × `overlapCenter` |
+| `css-08-big-lily` | Кувшинка 2×2 клетки сетки 3×3 — **два** фрога должны поместиться на неё, не перекрывая друг друга | 2 × `containedIn(#frog-N,#lily-zone)` + `noOverlap(#frog-1,#frog-2)` |
 | `css-09-two-ponds` | Два независимых пруда-сетки (2×2 и 3×3), в каждом своя пара | 2 × `containedIn` |
-| `css-10-four-colors` | Сетка 2×2, четыре лягушки на кувшинках своего цвета | 4 × `containedIn` |
+| `css-10-four-colors` | Сетка 4×3 (2×2 целевая зона + ряд из 4 отдельных стартовых клеток), четыре лягушки на кувшинках своего цвета | 4 × `containedIn` |
+| `css-11-shift` | Сетка 8×6 с подписанными столбцами A–H и рядами 1–6; у каждой из 6 цветных лягушек кувшинка сдвинута на один и тот же вектор (+3 столбца, +2 ряда) | 6 × `overlapCenter` |
+| `css-12-rainbow` | Сетка 6×3 с подписями; 6 лягушек сверху в произвольном порядке, кувшинки снизу — в порядке радуги | 6 × `overlapCenter` |
+| `css-13-rotate` | Сетка 6×6 с подписями; у каждой лягушки кувшинка в точке, симметричной относительно центра поля (поворот на 180°, не отражение) | 6 × `overlapCenter` |
 
 Эталонные CSS-решения (для ручной проверки, не хранятся как отдельное поле):
 
@@ -299,12 +323,26 @@ grid-контейнер). `goal`/`hint` не называют положение
 | `css-05-spread` | `#pond{justify-content:space-between}` |
 | `css-06-grid` | `#frog{grid-column:3;grid-row:3}` |
 | `css-07-two-spots` | `#frog-a{left:372px;top:32px}` `#frog-b{left:52px;top:172px}` |
-| `css-08-big-lily` | `#frog{grid-column:1 / span 2;grid-row:1 / span 2}` |
+| `css-08-big-lily` | `#frog-1{grid-column:1;grid-row:1}` `#frog-2{grid-column:2;grid-row:1}` |
 | `css-09-two-ponds` | `#frog-a{grid-column:2;grid-row:2}` `#frog-b{grid-column:2;grid-row:2}` |
 | `css-10-four-colors` | `#frog-yellow{grid-column:1;grid-row:1}` `#frog-green{grid-column:2;grid-row:1}` `#frog-red{grid-column:1;grid-row:2}` `#frog-blue{grid-column:2;grid-row:2}` |
+| `css-11-shift` | `#frog-red{grid-column:5;grid-row:4}` `#frog-blue{grid-column:7;grid-row:4}` `#frog-yellow{grid-column:6;grid-row:6}` `#frog-green{grid-column:9;grid-row:5}` `#frog-purple{grid-column:8;grid-row:7}` `#frog-orange{grid-column:5;grid-row:7}` |
+| `css-12-rainbow` | `#frog-yellow{grid-column:4;grid-row:4}` `#frog-purple{grid-column:7;grid-row:4}` `#frog-red{grid-column:2;grid-row:4}` `#frog-blue{grid-column:6;grid-row:4}` `#frog-orange{grid-column:3;grid-row:4}` `#frog-green{grid-column:5;grid-row:4}` |
+| `css-13-rotate` | `#frog-red{grid-column:7;grid-row:7}` `#frog-blue{grid-column:5;grid-row:6}` `#frog-yellow{grid-column:6;grid-row:4}` `#frog-green{grid-column:3;grid-row:7}` `#frog-purple{grid-column:2;grid-row:5}` `#frog-orange{grid-column:4;grid-row:4}` |
 
-Планируется, что новые уровни также будут только про лягушек и кувшинки;
-уровни на CSS-селекторы и JavaScript, существовавшие в более ранней версии
+Уровни 11–13 вводят размеченную сетку — столбцы-буквы и ряды-цифры как
+настоящие текстовые узлы (`<div class="hcell" id="col-A">A</div>` и т.п.) в
+обоих представлениях сцены, не как CSS `content` — координатный язык,
+понятный и игроку, и модели, не раскрывающий положение кувшинок. Смысл
+каждого уровня — заменить перечисление «лягушка → клетка» одним правилом,
+который дорого (длинно) описать перечислением и легко сформулировать неточно:
+`css-11-shift` проверяет, заметит ли игрок общий вектор сдвига; `css-12-rainbow`
+— что порядок кувшинок называется одним словом независимо от перемешанного
+порядка лягушек; `css-13-rotate` — что игрок назовёт операцию точно (поворот
+на 180°, а не «зеркально», что для несимметричного расположения дало бы
+другие клетки).
+
+Уровни на CSS-селекторы и JavaScript, существовавшие в более ранней версии
 каталога, из текущей реализации удалены.
 
 ---
@@ -414,15 +452,27 @@ grid-контейнер). `goal`/`hint` не называют положение
 4. Кувшинка (`.lily`) — круг или овал со сплошной непрозрачной заливкой
    контрастного цвета; общий стиль в `runner.html` даёт форму и запасной
    цвет, но уровень, задающий свой цвет, должен делать это явно для каждого
-   `.lily`-элемента на сцене.
+   `.lily`-элемента на сцене. Если лягушка в решённом состоянии может оказаться
+   точно поверх кувшинки её собственного цвета (`css-04`/`css-10`..`css-13`),
+   кувшинка должна быть крупнее лягушки (кольцо остаётся видимым поверх) и/или
+   заметно темнее того же оттенка — иначе при совпадении их не отличить.
 5. В исходном положении (до решения игрока) лягушка и кувшинка не
-   перекрываются.
+   перекрываются; никакие два фрога не стартуют в одной точке/клетке.
+6. Если у уровня нет структурной координатной сетки (flex-сцена с
+   `position:absolute`), на поле должны быть нейтральные зрительные ориентиры
+   (например, тонкая фоновая сетка линий), иначе положение цели физически
+   нечем описать словами — так появился фон-сетка в `css-07-two-spots`.
+   Ориентиры разрешено включать в `aiScene` (они не говорят, где кувшинка);
+   сама кувшинка и любые данные о её положении — по-прежнему никогда.
 
-Пункты 3–5 проверены тестом
+Пункты 3–4 проверены тестом
 `PromptQuest.Web.Tests/RunnerBrowserTests.Scene_DoesNotOverflow_AndLilyIsVisible`
 в настоящем Chromium (раздел 14); пункты 1–2 проверяются тем же тестовым
 классом косвенно — через `ReferenceSolution_Passes_EmptyCode_Fails`, который
 не прошёл бы, если бы клетка/лягушка оказались не там, где их ожидает проверка.
+Пункты 5–6 не имеют отдельного автотеста — соблюдены по построению разметки
+каждого уровня и проверены визуально (скриншоты в реальном Chromium) при
+добавлении/редизайне конкретного уровня.
 
 ---
 
@@ -436,6 +486,7 @@ grid-контейнер). `goal`/`hint` не называют положение
 |---|---|---|---|
 | `overlapCenter` | `subject`, `target` | Центры совпадают в пределах `tolerancePx` по обеим осям | да |
 | `containedIn` | `subject`, `target` | `subject` полностью внутри `target` с допуском `tolerancePx` | да |
+| `noOverlap` | `subject`, `target` | Прямоугольники `subject` и `target` не пересекаются (строгая проверка, без `tolerancePx`) | да (только `css-08-big-lily`) |
 | `orderX` / `orderY` | `selectors` | Элементы расположены в заданном порядке по X/Y | нет |
 | `computedStyle` | `subject`, `property`, `expected` | `getComputedStyle` равно `expected` (строгое сравнение после trim) | нет |
 | `selectorMatches` | `expectedIds` | Множество `id`, выбранных селектором игрока, совпадает с `expectedIds` | нет |
@@ -514,7 +565,8 @@ N секунд» (N — из `Retry-After`), `502` → «ИИ временно �
 
 При старте приложение проверяет сохранённый в `localStorage` `playerId` на
 сервере (`GET /api/players/{id}`) и сбрасывает его локально, если сервер его
-не знает (например, после потери данных in-memory хранилища) — без этого
+не знает (например, после восстановления БД из бэкапа без этого игрока, или
+при переключении браузера между разными окружениями/базами) — без этого
 игрок застревал бы на ошибке «игрок не найден».
 
 ---
@@ -542,15 +594,18 @@ N секунд» (N — из `Retry-After`), `502` → «ИИ временно �
   }
 }
 
-// appsettings.Development.json
+// appsettings.Development.json — секции PromptQuest/Gemini здесь не задаются,
+// только Logging; секреты и строка подключения — через dotnet user-secrets.
 {
-  "PromptQuest": { "UseInMemoryStorage": true }
+  "Logging": { "LogLevel": { "Default": "Information", "Microsoft.AspNetCore": "Warning" } }
 }
 ```
 
 `ConnectionStrings:Default` не хранится в файлах конфигурации — только через
-переменную окружения `ConnectionStrings__Default` или `dotnet user-secrets`;
-обязательна во всех режимах, кроме `Development` с `UseInMemoryStorage=true`.
+`dotnet user-secrets` (разработка) или переменную окружения
+`ConnectionStrings__Default` (прод/CI); обязательна во всех окружениях без
+исключения — без неё `AddStorage` бросает `InvalidOperationException` ещё до
+`builder.Build()` (раздел 2.3).
 
 `Configuration/AppOptions.cs` содержит также свойство `GeminiModel`, которое
 сейчас не используется кодом генерации (`AiAgent` читает модель из `Gemini:Model`
@@ -593,7 +648,7 @@ N секунд» (N — из `Retry-After`), `502` → «ИИ временно �
 | Превышен лимит запросов к ИИ на игрока | `429` с заголовком `Retry-After`; попытка не создаётся |
 | Сервер недоступен при отправке результата | Результат показывается локально; отправка не повторяется автоматически |
 | localStorage очищен или содержит неизвестный серверу `playerId` | Игрок считается новым / сбрасывается на экран ввода никнейма |
-| Перезапуск сервера в режиме in-memory | Данные теряются — прямое следствие отсутствия БД в этом режиме |
+| Перезапуск работающего приложения | Данные сохраняются — хранилище всегда PostgreSQL (раздел 2.3). In-memory хранилище существует только внутри тестового проекта и этого сценария не касается. |
 
 ---
 
