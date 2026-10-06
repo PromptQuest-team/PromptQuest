@@ -11,10 +11,11 @@
 
 - **Backend**: ASP.NET Core 9 (Minimal API), один проект `PromptQuest.Web`, раздаёт
   и API, и статику фронтенда.
-- **База данных**: PostgreSQL через EF Core 9 (`Npgsql.EntityFrameworkCore.PostgreSQL`),
-  во всех окружениях одинаково, включая `Development` — без строки подключения
-  приложение не стартует (см. «Запуск локально»). In-memory хранилище существует
-  только в тестовом проекте, из обычного запуска приложения недостижимо.
+- **База данных**: PostgreSQL через EF Core 9 (`Npgsql.EntityFrameworkCore.PostgreSQL`).
+  `Development` по умолчанию работает без БД (in-memory хранилище — общей базы
+  для разработки пока нет); все остальные окружения, и `Development` с явно
+  выключенным флагом, требуют PostgreSQL и строку подключения — см. «Запуск
+  локально».
 - **AI**: Google Gemini через пакет `Google.GenAI`. Модель и ключ берутся из
   конфигурации (`Gemini:Model`, `Gemini:ApiKey`). Лимит запросов к ИИ — на игрока,
   встроенным `System.Threading.RateLimiting` (без дополнительных пакетов).
@@ -25,37 +26,42 @@
 
 ## Запуск локально
 
-Приложение всегда читает и пишет в настоящую PostgreSQL — в `Development` точно
-так же, как в проде; единственная разница в том, что в `Development` схема
-создаётся/обновляется автоматически при старте (`Database.Migrate()` в
-`Program.cs`), а не отдельным шагом деплоя. In-memory хранилище нигде в
-`Program.cs` не выбирается — оно существует только внутри тестового проекта
-(`PromptQuestWebFactory` подставляет его явно в DI, в обход обычного запуска
-приложения).
+Два режима, выбираются `PromptQuest:UseInMemoryStorage` (работает только в
+`Development`; в любом другом окружении PostgreSQL обязательна всегда):
 
-Секреты (строка подключения, ключ Gemini) задаются через
-[`dotnet user-secrets`](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-(удобно для разработки — секреты лежат вне репозитория, в домашней папке
-пользователя) или через переменные окружения — не через `appsettings*.json`.
+### Без БД (по умолчанию в Development)
 
-Нужен локально доступный сервер PostgreSQL (например, через Docker:
-`docker run -e POSTGRES_PASSWORD=<пароль> -p 5432:5432 postgres`) и пустая база
-данных для разработки. Затем из `PromptQuest.Web/`:
+Общей базы для разработки пока нет, поэтому `appsettings.Development.json`
+по умолчанию включает `PromptQuest:UseInMemoryStorage=true` — игроки, попытки
+и прогресс хранятся в памяти процесса и **теряются при каждом перезапуске**.
 
 ```
-dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:Default" "Host=localhost;Database=promptquest_dev;Username=<пользователь>;Password=<пароль>"
-dotnet user-secrets set "Gemini:ApiKey" "<ключ Gemini API>"
-dotnet run
+dotnet run --project PromptQuest.Web
 ```
-
-При старте в `Development` схема (`Players`, `Attempts`, `LevelProgresses`)
-создаётся/обновляется автоматически — отдельно накатывать миграции не нужно.
-Без `ConnectionStrings:Default` (пустой/некорректный `Host`/`Database`/
-`Username`) приложение завершится с понятной ошибкой конфигурации сразу при
-старте, не запустившись в каком-либо «облегчённом» режиме.
 
 Открыть `http://localhost:5280` (профиль `http` из `launchSettings.json`).
+
+### С PostgreSQL
+
+Нужно явно выключить флаг и задать строку подключения — удобнее всего через
+[`dotnet user-secrets`](https://learn.microsoft.com/aspnet/core/security/app-secrets)
+(секреты лежат вне репозитория, в домашней папке пользователя), не через
+`appsettings*.json`:
+
+```
+dotnet user-secrets init --project PromptQuest.Web
+dotnet user-secrets set "PromptQuest:UseInMemoryStorage" "false" --project PromptQuest.Web
+dotnet user-secrets set "ConnectionStrings:Default" "Host=<хост>;Database=<имя БД>;Username=<пользователь>;Password=<пароль>" --project PromptQuest.Web
+dotnet user-secrets set "Gemini:ApiKey" "<ключ Gemini API>" --project PromptQuest.Web
+dotnet run --project PromptQuest.Web
+```
+
+Без строки подключения (или с пустым `Host`/`Database`/`Username`) в этом
+режиме приложение завершится с понятной ошибкой конфигурации сразу при
+старте — не откатывается на in-memory молча. При старте в `Development` с
+этим режимом схема (`Players`, `Attempts`, `LevelProgresses`)
+создаётся/обновляется автоматически (`Database.Migrate()`); в in-memory
+режиме миграции не запускаются вовсе.
 
 Для окружений без собственного шага деплоя миграции можно накатить вручную:
 
@@ -93,11 +99,11 @@ dotnet test PromptQuest.Web.Tests
 
 Тесты не вызывают реальный Gemini API (генерация кода подменена заглушкой) и не
 открывают соединение с реальной БД: HTTP-тесты (`ApiIntegrationTests`,
-`PromptQuestWebFactory`) поднимают приложение под окружением `Testing` и явно
-подменяют `IPlayerStore`/`IAttemptStore`/`ILeaderboardService` на in-memory —
-это единственное место, где in-memory хранилище вообще используется; реальный
-запуск приложения (`Program.cs`) всегда требует PostgreSQL (см. «Запуск
-локально»). Покрывают: каталог уровней (вид сцены для ИИ не содержит
+`PromptQuestWebFactory`) поднимают приложение под окружением `Development` с
+`PromptQuest:UseInMemoryStorage=true` — тот же переключатель и та же in-memory
+ветка, что использует обычный локальный запуск без БД (см. «Запуск локально»);
+DB-ветка (`AddStorage_SelectsLeaderboardServiceByConfiguration`) проверяется
+только разрешением зависимостей, без реального подключения. Покрывают: каталог уровней (вид сцены для ИИ не содержит
 кувшинок/данных о положении цели, `goal` не содержит слов/цифр, выдающих положение),
 сборку системной инструкции для ИИ (подстановка `{CURRENT_CSS}`, изоляция
 `goal`/`hint`), реакцию на сбой провайдера (исключение/таймаут/пустой ответ —
@@ -246,7 +252,7 @@ id управляемых элементов (пруд, лягушки, сетк
 
 | Путь | Назначение |
 |---|---|
-| `Program.cs` | Регистрация EF/Postgres-хранилища через `StorageRegistration.AddStorage` (всегда `useInMemoryStorage: false` — in-memory только в тестах), автоприменение миграций на старте в `Development` (`Database.Migrate()`), регистрация Gemini-клиента и лимитера запросов, подключение статики и эндпоинтов. |
+| `Program.cs` | Выбор хранилища через `StorageRegistration.AddStorage` (`PromptQuest:UseInMemoryStorage` — только в `Development`, по умолчанию `true`; везде иначе PostgreSQL), автоприменение миграций на старте в `Development`, если используется PostgreSQL (`Database.Migrate()`), регистрация Gemini-клиента и лимитера запросов, подключение статики и эндпоинтов. |
 | `appsettings.json` / `appsettings.Development.json` | Конфигурация `PromptQuest`, `Gemini`; секреты (`ConnectionStrings:Default`, `Gemini:ApiKey`) сюда не попадают — только через `dotnet user-secrets`/переменные окружения. |
 | `AI/AiAgent.cs` | Реализация `ICodeGenerationService` поверх Gemini: системная инструкция из `level.SystemPrompt` + `level.AiScene`, корректный `Success=false` на любой сбой. |
 | `Configuration/AppOptions.cs` | Типизированная модель секции `PromptQuest` (лимиты промта/кода, таймаут и лимит запросов к ИИ и т.д.). |
@@ -274,9 +280,8 @@ xUnit-проект: `LevelCatalogTests`, `AiAgentTests`, `LeaderboardTests`,
 - Код игрока и ответ ИИ выполняются только в браузере игрока, в изолированном
   `iframe`; результат проверки отправляется на сервер клиентом — это осознанное
   доверие клиенту, серверной переверификации результата нет.
-- In-memory хранилище используется только тестовым проектом; у работающего
-  приложения (любое окружение, включая `Development`) данные всегда в PostgreSQL
-  и переживают перезапуск процесса.
+- Данные в режиме in-memory (`Development` по умолчанию, пока нет общей базы
+  для разработки) теряются при каждом перезапуске процесса.
 - В `appsettings.json` на момент последнего аудита обнаружен закоммиченный ключ
   Gemini API — требуется ротация ключа и его удаление из репозитория и истории git.
 - `ManualCodeEntry` (ручной ввод CSS без ИИ) остаётся в коде как альтернативный
