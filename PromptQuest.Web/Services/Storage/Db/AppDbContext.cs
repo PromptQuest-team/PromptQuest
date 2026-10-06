@@ -38,6 +38,7 @@ public sealed class AppDbContext : DbContext
 
             e.HasIndex(x => new { x.PlayerId, x.LevelId }).IsUnique();
             e.HasIndex(x => new { x.LevelId, x.Completed, x.BestScore });
+            e.HasIndex(x => new { x.LevelId, x.Completed, x.BestPromptLength });
         });
 
         b.Entity<Attempt>(e =>

@@ -7,7 +7,5 @@ public sealed record LevelSummaryDto(
     string Title,
     int Difficulty,
     bool Completed,
-    int BestAttempts,
-    int BestTimeMs,
-    int BestScore,
+    int BestPromptLength,
     bool ManualEntry);

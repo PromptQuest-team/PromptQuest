@@ -30,17 +30,5 @@ public static class LeaderboardEndpoints
 
             return Results.Ok(entries);
         });
-
-        app.MapGet("/api/leaderboard/global", async (
-            int? take,
-            ILeaderboardService leaderboardService,
-            IOptions<AppOptions> options,
-            CancellationToken ct) =>
-        {
-            var entries = await leaderboardService.GetGlobalAsync(
-                take ?? options.Value.LeaderboardTake, ct);
-
-            return Results.Ok(entries);
-        });
     }
 }

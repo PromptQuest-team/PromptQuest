@@ -2,7 +2,6 @@ namespace PromptQuest.Web.Dtos;
 
 public sealed record SubmitResultResponse(
     bool Accepted,
-    int Score,
+    int PromptLength,
     bool PersonalBest,
-    int Attempts,
     string? NextLevelId);

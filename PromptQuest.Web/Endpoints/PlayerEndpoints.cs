@@ -51,10 +51,7 @@ public static class PlayerEndpoints
                 progressDtos.Add(new LevelProgressDto(
                     progress.LevelId,
                     progress.Completed,
-                    progress.BestAttempts,
-                    progress.BestTimeMs,
-                    progress.BestScore,
-                    progress.TotalAttempts,
+                    progress.BestPromptLength,
                     progress.CompletedAt));
             }
 

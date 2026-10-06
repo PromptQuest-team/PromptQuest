@@ -75,6 +75,7 @@ public sealed class InMemoryPlayerStore : IPlayerStore
             existing.BestTimeMs = progress.BestTimeMs;
             existing.BestScore = progress.BestScore;
             existing.TotalAttempts = progress.TotalAttempts;
+            existing.BestPromptLength = progress.BestPromptLength;
             existing.CompletedAt = progress.CompletedAt;
         }
 

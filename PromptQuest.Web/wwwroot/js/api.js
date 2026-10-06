@@ -59,7 +59,4 @@ export const Api = {
       `/leaderboard/levels/${encodeURIComponent(levelId)}?take=${take}`
     );
   },
-  getGlobalLeaderboard(take) {
-    return request("GET", `/leaderboard/global?take=${take}`);
-  },
 };

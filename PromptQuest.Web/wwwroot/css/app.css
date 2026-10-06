@@ -261,6 +261,12 @@ textarea {
   margin: 4px 0;
 }
 
+.char-counter {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin: 4px 0;
+}
+
 .checks-list {
   list-style: none;
   padding: 0;

@@ -54,7 +54,6 @@ else
 }
 
 builder.Services.AddSingleton<ILevelStore, JsonLevelStore>();
-builder.Services.AddSingleton<ILeaderboardService, InMemoryLeaderboardService>();
 builder.Services.AddSingleton<ICodeGenerationService, AiAgent>();
 builder.Services.AddSingleton<AiRateLimiter>();
 
