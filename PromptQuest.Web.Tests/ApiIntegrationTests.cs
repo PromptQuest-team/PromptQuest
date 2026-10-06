@@ -12,10 +12,9 @@ using Xunit;
 namespace PromptQuest.Web.Tests;
 
 // Реальный Gemini API не вызывается ни в одном из этих тестов — вся генерация
-// кода подменена FakeCodeGenerationService. Миграции на реальной БД не
-// применяются; DB-ветка проверяется только разрешением зависимостей (это не
-// открывает подключение к Postgres — EF не соединяется с сервером до первого
-// фактического запроса).
+// кода подменена FakeCodeGenerationService. PromptQuestWebFactory всегда
+// подставляет in-memory хранилище (см. её ConfigureServices), так что ни один
+// из HTTP-тестов ниже не подключается к реальной БД.
 public class ApiIntegrationTests
 {
     private static async Task<string> CreatePlayerAsync(HttpClient client, string nickname)
@@ -32,7 +31,6 @@ public class ApiIntegrationTests
     {
         using var factory = new PromptQuestWebFactory(new Dictionary<string, string?>
         {
-            ["PromptQuest:UseInMemoryStorage"] = "true",
             ["PromptQuest:AiRequestsPerMinutePerPlayer"] = "1",
         });
         var client = factory.CreateClient();

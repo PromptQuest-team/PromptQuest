@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PromptQuest.Web.Models;
 using PromptQuest.Web.Services;
+using PromptQuest.Web.Services.Storage;
 
 namespace PromptQuest.Web.Tests;
 
@@ -27,15 +28,23 @@ public sealed class PromptQuestWebFactory : WebApplicationFactory<Program>
 
     public PromptQuestWebFactory(Dictionary<string, string?>? configOverrides = null)
     {
-        _configOverrides = configOverrides ?? new Dictionary<string, string?>
-        {
-            ["PromptQuest:UseInMemoryStorage"] = "true",
-        };
+        // Program.cs reads ConnectionStrings:Default synchronously, before
+        // WebApplicationFactory gets a chance to layer in test configuration
+        // (see StorageRegistration.cs comment). An env var is visible at that
+        // point because WebApplication.CreateBuilder loads env vars eagerly.
+        // The value is never actually connected to: ConfigureServices below
+        // replaces the EF-backed stores with in-memory ones before any
+        // request reaches them.
+        Environment.SetEnvironmentVariable("ConnectionStrings__Default", "Host=unused;Database=unused;Username=unused");
+
+        _configOverrides = configOverrides ?? new Dictionary<string, string?>();
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.UseEnvironment("Development");
+        // Not "Development": that would make Program.cs run Database.Migrate()
+        // against the dummy connection string above.
+        builder.UseEnvironment("Testing");
 
         builder.ConfigureAppConfiguration((_, cfg) =>
         {
@@ -46,6 +55,11 @@ public sealed class PromptQuestWebFactory : WebApplicationFactory<Program>
         {
             services.RemoveAll<ICodeGenerationService>();
             services.AddSingleton<ICodeGenerationService>(CodeGen);
+
+            services.RemoveAll<IPlayerStore>();
+            services.RemoveAll<IAttemptStore>();
+            services.RemoveAll<ILeaderboardService>();
+            services.AddStorage(useInMemoryStorage: true, connectionString: null);
         });
     }
 }
