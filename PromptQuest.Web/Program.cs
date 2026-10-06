@@ -56,6 +56,7 @@ else
 builder.Services.AddSingleton<ILevelStore, JsonLevelStore>();
 builder.Services.AddSingleton<ILeaderboardService, InMemoryLeaderboardService>();
 builder.Services.AddSingleton<ICodeGenerationService, AiAgent>();
+builder.Services.AddSingleton<AiRateLimiter>();
 
 builder.Services.AddProblemDetails();
 
@@ -65,18 +66,10 @@ builder.Services.AddSingleton(sp =>
     return new Client(apiKey: apiKey);
 });
 
-builder.Services.AddScoped<AiAgent>();
-
 var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
-
-app.MapGet("/test-gemini", async (AiAgent agent) =>
-{
-    var result = await agent.AskAsync("������! ������� ������ ����� ������������� AI ����� � �������.");
-    return Results.Ok(new { result });
-});
 
 app.MapPlayerEndpoints();
 app.MapLevelEndpoints();

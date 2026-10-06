@@ -107,6 +107,17 @@ export const PlayScreen = {
       hintEl.hidden = true;
     }
 
+    function describeAttemptError(err) {
+      if (err && err.status === 429) {
+        const seconds = err.retryAfterSeconds || 60;
+        return `Слишком часто, подождите ${seconds} секунд.`;
+      }
+      if (err && err.status === 502) {
+        return "ИИ временно недоступен, попробуйте ещё раз.";
+      }
+      return (err && err.message) || "Не удалось зарегистрировать попытку.";
+    }
+
     function renderChecks(checks) {
       checksList.innerHTML = "";
       for (const check of checks) {
@@ -203,7 +214,7 @@ export const PlayScreen = {
         const attempt = await Api.createAttempt(playerId, levelId, promptInput.value.trim());
         await runAttempt(attempt.attemptId, code);
       } catch (err) {
-        showHint(err.message || "Не удалось зарегистрировать попытку.");
+        showHint(describeAttemptError(err));
       } finally {
         runButton.disabled = false;
       }
@@ -223,7 +234,9 @@ export const PlayScreen = {
         codeInput.value = attempt.code;
         await runAttempt(attempt.attemptId, attempt.code);
       } catch (err) {
-        showHint(err.message || "Не удалось получить код.");
+        // 429 (лимит запросов) и 502 (сбой ИИ) — попытка на сервере не создана,
+        // валидатор не запускаем, просто показываем сообщение.
+        showHint(describeAttemptError(err));
       } finally {
         submitPromptButton.disabled = false;
       }

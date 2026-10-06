@@ -1,6 +1,5 @@
-﻿using Google.GenAI;
+using Google.GenAI;
 using Google.GenAI.Types;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PromptQuest.Web.Configuration;
 using PromptQuest.Web.Models;
@@ -8,98 +7,113 @@ using PromptQuest.Web.Services;
 
 namespace PromptQuest.Web.AI
 {
+    // Реализация ICodeGenerationService поверх Gemini. Не содержит знаний про
+    // конкретную сцену (пруд/лягушка/кувшинка) — инструкция собирается из
+    // level.SystemPrompt и level.AiScene конкретного уровня (SPEC-ADDENDUM-02.md).
+    // level.Goal/level.Hint сюда никогда не попадают (SPEC-ADDENDUM-01.md, раздел A).
     public class AiAgent : ICodeGenerationService
     {
+        private const string FormatRules =
+            "Общие правила формата ответа (всегда соблюдаются, независимо от уровня):\n" +
+            "- Верни ИСКЛЮЧИТЕЛЬНО CSS-код, без markdown-обёрток (``` или ```css), без комментариев, без пояснений, без приветствий.\n" +
+            "- Ответ должен состоять только из CSS-правил и ничего больше.";
+
         private readonly Client _client;
         private readonly IConfiguration _config;
+        private readonly IOptions<AppOptions> _options;
         private readonly ILogger<AiAgent> _logger;
 
-        private const string SystemPrompt =
-            "Ты — ассистент в игровом проекте PromptQuest.\n" +
-            "Это игра-головоломка: игрок пишет команды на естественном языке, " +
-            "а ты превращаешь их в CSS для контейнера #pond.\n" +
-            "Внутри #pond находятся лягушки (Frog) и лилии (Lily). " +
-            "Управляя свойствами контейнера #pond, ты перемещаешь лягушек на сказанное место.\n\n" +
-            "ПРАВИЛА (обязательны к соблюдению):\n" +
-            "1. Меняй ТОЛЬКО контейнер #pond. Селекторы Frog и Lily не трогай. Исключение если есть grid.\n" +
-            "3. Верни ИСКЛЮЧИТЕЛЬНО CSS-код ровно в таком формате:\n" +
-            "   #pond { свойство: значение; свойство: значение; }\n" +
-            "4. НЕ добавляй markdown-обёртки ``` или ```css, комментарии, пояснения, " +
-            "приветствия, вопросы, текст до или после блока.\n" +
-            "5. Ответ обязан начинаться с '#pond' и заканчиваться символом '}'.\n" +
-            "6. Если команда игрока невыполнима — верни текущий CSS без изменений.\n\n" +
-            "7. Каждый запрос перечитывай CSS присланного уровня. Не пытайся запомнить предыдущие данные"+
-            "ТЕКУЩИЙ CSS ОБЪЕКТА #pond:\n" +
-            "{CURRENT_CSS}\n\n" +
-            "Примени команду игрока к текущему CSS и верни новый полный блок #pond { ... }.";
-
-        public AiAgent(Client client, IConfiguration config, ILogger<AiAgent> logger)
+        public AiAgent(Client client, IConfiguration config, IOptions<AppOptions> options, ILogger<AiAgent> logger)
         {
             _client = client;
             _config = config;
+            _options = options;
             _logger = logger;
         }
 
         public async Task<CodeGenerationResult> GenerateAsync(LevelDefinition level, string prompt, CancellationToken ct = default)
         {
+            if (string.IsNullOrWhiteSpace(prompt))
+            {
+                return new CodeGenerationResult(false, "", false, CodeSource.Ai, "Промт пуст.");
+            }
+
+            using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeoutCts.CancelAfter(TimeSpan.FromMilliseconds(_options.Value.AiRequestTimeoutMs));
+
             try
             {
-                return new CodeGenerationResult(true, await AskAsync(prompt), false, CodeSource.Ai, null);
+                var code = await AskAsync(level, prompt, timeoutCts.Token);
+
+                if (string.IsNullOrWhiteSpace(code))
+                {
+                    _logger.LogWarning("Gemini returned an empty response for level {LevelId}.", level.Id);
+                    return new CodeGenerationResult(false, "", false, CodeSource.Ai, "ИИ вернул пустой ответ.");
+                }
+
+                return new CodeGenerationResult(true, code, false, CodeSource.Ai, null);
             }
-            catch (InvalidOperationException)
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
-                return new CodeGenerationResult(true, "Не удалось получить ответ из ИИ. Возможно сервер сейчас перегружен.\n Попробуйте позже.", false, CodeSource.Ai, "Не удалось получить ответ из ИИ. Возможно сервер сейчас перегружен.\n Попробуйте позже.");
+                _logger.LogWarning(
+                    "Gemini request timed out after {TimeoutMs} ms for level {LevelId}.",
+                    _options.Value.AiRequestTimeoutMs, level.Id);
+                return new CodeGenerationResult(false, "", false, CodeSource.Ai, "Истекло время ожидания ответа от ИИ.");
             }
-            
+            catch (OperationCanceledException)
+            {
+                // Отмена вызвана внешним ct (например, клиент разорвал запрос) — не ошибка AI, просто пробрасываем.
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Gemini request failed for level {LevelId}.", level.Id);
+                return new CodeGenerationResult(false, "", false, CodeSource.Ai, "Не удалось получить ответ от ИИ. Попробуйте позже.");
+            }
         }
 
-        public async Task<string> AskAsync(string input, CancellationToken ct = default)
+        private async Task<string> AskAsync(LevelDefinition level, string prompt, CancellationToken ct)
         {
-            if (string.IsNullOrWhiteSpace(input))
-                return string.Empty;
-
             var model = _config["Gemini:Model"];
 
             var config = new GenerateContentConfig
             {
                 SystemInstruction = new Content
                 {
-                    Parts = new List<Part> { new Part { Text = SystemPrompt } }
+                    Parts = new List<Part> { new Part { Text = BuildSystemInstruction(level) } }
                 }
             };
 
-            try
+            var response = await _client.Models.GenerateContentAsync(
+                model: model,
+                contents: prompt,
+                config: config
+            );
+
+            var parts = response?.Candidates?
+                .FirstOrDefault()?
+                .Content?
+                .Parts;
+
+            if (parts is null || parts.Count == 0)
             {
-                var response = await _client.Models.GenerateContentAsync(
-                    model: model,
-                    contents: input,
-                    config: config
-                );
-
-                // Склеиваем ВСЕ части, а не только первую
-                var parts = response?.Candidates?
-                    .FirstOrDefault()?
-                    .Content?
-                    .Parts;
-
-                if (parts is null || parts.Count == 0)
-                    return string.Empty;
-
-                return string.Concat(parts.Select(p => p.Text));
+                return string.Empty;
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "Gemini request failed. Model={Model}, InputLength={Len}",
-                    model, input.Length);
 
-                throw new InvalidOperationException(
-                    "Не удалось получить ответ от AI. Попробуйте позже.", ex);
-            }
+            return string.Concat(parts.Select(p => p.Text));
         }
 
-        
+        // Инструкция собирается из systemPrompt конкретного уровня (с подстановкой
+        // {CURRENT_CSS} из level.AiScene.BaseCss — не из полного scene.baseCss)
+        // плюс общие правила формата и разметка level.AiScene.Html. goal/hint
+        // уровня сюда не попадают ни в каком виде.
+        private static string BuildSystemInstruction(LevelDefinition level)
+        {
+            var instruction = (level.SystemPrompt ?? "").Replace("{CURRENT_CSS}", level.AiScene.BaseCss ?? "");
+
+            return instruction
+                + "\n\n" + FormatRules
+                + "\n\nHTML сцены, которой ты управляешь:\n" + (level.AiScene.Html ?? "");
+        }
     }
-
 }
-

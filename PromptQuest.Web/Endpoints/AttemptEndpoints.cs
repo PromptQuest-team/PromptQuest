@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.Options;
 using PromptQuest.Web.Configuration;
 using PromptQuest.Web.Dtos;
@@ -13,10 +14,12 @@ public static class AttemptEndpoints
     {
         app.MapPost("/api/attempts", async (
             CreateAttemptRequest request,
+            HttpContext httpContext,
             IPlayerStore playerStore,
             ILevelStore levelStore,
             IAttemptStore attemptStore,
             ICodeGenerationService codeGenerationService,
+            AiRateLimiter rateLimiter,
             IOptions<AppOptions> options,
             CancellationToken ct) =>
         {
@@ -44,8 +47,31 @@ public static class AttemptEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            var attemptNumber = await attemptStore.CountAsync(request.PlayerId, request.LevelId, ct) + 1;
+            using var lease = rateLimiter.Acquire(request.PlayerId);
+            if (!lease.IsAcquired)
+            {
+                var retryAfterSeconds = 60;
+                if (lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    retryAfterSeconds = (int)Math.Ceiling(retryAfter.TotalSeconds);
+                }
+
+                httpContext.Response.Headers.RetryAfter = retryAfterSeconds.ToString();
+
+                return Results.Problem(
+                    detail: $"Слишком много запросов к ИИ. Подождите {retryAfterSeconds} секунд.",
+                    statusCode: StatusCodes.Status429TooManyRequests);
+            }
+
             var generation = await codeGenerationService.GenerateAsync(level, prompt, ct);
+            if (!generation.Success)
+            {
+                return Results.Problem(
+                    detail: generation.Error ?? "ИИ не ответил.",
+                    statusCode: StatusCodes.Status502BadGateway);
+            }
+
+            var attemptNumber = await attemptStore.CountAsync(request.PlayerId, request.LevelId, ct) + 1;
 
             var attempt = new Attempt
             {
