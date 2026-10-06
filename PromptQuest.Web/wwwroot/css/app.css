@@ -319,24 +319,6 @@ textarea {
 }
 
 /* Экран таблицы лидеров */
-.tabs {
-  display: flex;
-  gap: 10px;
-  margin: 16px 0;
-}
-
-.tab-button {
-  background: var(--panel-alt);
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-}
-
-.tab-button.active {
-  background: var(--accent);
-  color: #05131f;
-  font-weight: 600;
-}
-
 .leaderboard-table {
   width: 100%;
   border-collapse: collapse;

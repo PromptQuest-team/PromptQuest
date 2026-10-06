@@ -36,7 +36,7 @@ export const LeaderboardScreen = {
         <select id="level-select"></select>
         <table class="leaderboard-table">
           <thead>
-            <tr><th>Место</th><th>Никнейм</th><th>Длина промта</th></tr>
+            <tr><th>Место</th><th>Никнейм</th><th>Длина промта (символов)</th></tr>
           </thead>
           <tbody id="level-rows"><tr><td colspan="3">Выберите уровень</td></tr></tbody>
         </table>
