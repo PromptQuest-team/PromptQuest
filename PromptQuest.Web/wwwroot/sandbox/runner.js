@@ -318,6 +318,30 @@ function matchesForbiddenPattern(code, patterns) {
   return null;
 }
 
+// Раннер не знает заранее размер сцены конкретного уровня (он задаётся в
+// levels.json и отличается от уровня к уровню) — родитель измеряет его здесь
+// и подгоняет размер sandbox-iframe под него (sandbox.js), вместо того чтобы
+// держать один фиксированный размер для всех уровней.
+// Меряем именно #pond, а не document.documentElement.scrollWidth/Height: html —
+// обычный block-элемент, его width:auto растягивается на всю ширину текущего
+// iframe (а не сжимается до контента), так что scrollWidth в момент, когда
+// #pond уже уже, чем предыдущий/запасной размер iframe, просто вернул бы этот
+// предыдущий размер, а не настоящую ширину сцены. #pond у каждого уровня —
+// либо с явным width (flex-уровни и все grid-уровни после правки размера
+// окна), либо сам задаёт свой размер через grid-template — его собственный
+// getBoundingClientRect() не зависит от текущего размера iframe.
+function measureSceneSize() {
+  const pond = document.getElementById("pond");
+  if (pond) {
+    const r = pond.getBoundingClientRect();
+    return { width: Math.ceil(r.width), height: Math.ceil(r.height) };
+  }
+  return {
+    width: document.documentElement.scrollWidth,
+    height: document.documentElement.scrollHeight,
+  };
+}
+
 async function runChecks(msg) {
   const code = msg.code || "";
 
@@ -331,6 +355,7 @@ async function runChecks(msg) {
       passed: false,
       checks: [],
       error: `Код содержит запрещённую конструкцию: ${forbiddenHit}`,
+      size: measureSceneSize(),
     };
   }
 
@@ -338,8 +363,10 @@ async function runChecks(msg) {
 
   await waitTwoFrames();
 
+  const size = measureSceneSize();
+
   if (applyError) {
-    return { passed: false, checks: [], error: applyError };
+    return { passed: false, checks: [], error: applyError, size };
   }
 
   const checks = (msg.validation && msg.validation.checks) || [];
@@ -357,13 +384,14 @@ async function runChecks(msg) {
         passed: false,
         checks: results,
         error: `Неизвестный вид проверки: ${check.kind}`,
+        size,
       };
     }
     results.push(fn(check, ctx));
   }
 
   const passed = results.every((r) => r.passed);
-  return { passed, checks: results, error: null };
+  return { passed, checks: results, error: null, size };
 }
 
 window.addEventListener("message", (event) => {
@@ -385,6 +413,7 @@ window.addEventListener("message", (event) => {
           passed: result.passed,
           checks: result.checks,
           error: result.error,
+          size: result.size,
         },
         "*"
       );
