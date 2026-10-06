@@ -53,7 +53,7 @@ public sealed class RunnerBrowserTests : IClassFixture<RunnerBrowserFixture>, IA
         ["css-12-rainbow"] =
             "#frog-yellow{grid-column:4;grid-row:4}#frog-purple{grid-column:7;grid-row:4}#frog-red{grid-column:2;grid-row:4}#frog-blue{grid-column:6;grid-row:4}#frog-orange{grid-column:3;grid-row:4}#frog-green{grid-column:5;grid-row:4}",
         ["css-13-rotate"] =
-            "#frog-red{grid-column:7;grid-row:7}#frog-blue{grid-column:5;grid-row:6}#frog-yellow{grid-column:6;grid-row:4}#frog-green{grid-column:3;grid-row:7}#frog-purple{grid-column:2;grid-row:5}#frog-orange{grid-column:4;grid-row:4}",
+            "#frog-red{grid-column:6;grid-row:6}#frog-blue{grid-column:4;grid-row:5}#frog-yellow{grid-column:5;grid-row:3}#frog-green{grid-column:2;grid-row:6}#frog-purple{grid-column:1;grid-row:4}#frog-orange{grid-column:3;grid-row:3}",
     };
 
     private readonly RunnerBrowserFixture _fixture;
