@@ -13,6 +13,11 @@ namespace PromptQuest.Web.AI
     // level.Goal/level.Hint сюда никогда не попадают (SPEC-ADDENDUM-01.md, раздел A).
     public class AiAgent : ICodeGenerationService
     {
+        // AskAsync — protected internal virtual и BuildSystemInstruction — internal
+        // static исключительно для тестируемости (PromptQuest.Web.Tests подставляет
+        // провайдер-заглушку через наследование / вызывает сборку инструкции прямо),
+        // поведение обеих не меняется.
+
         private const string FormatRules =
             "Общие правила формата ответа (всегда соблюдаются, независимо от уровня):\n" +
             "- Верни ИСКЛЮЧИТЕЛЬНО CSS-код, без markdown-обёрток (``` или ```css), без комментариев, без пояснений, без приветствий.\n" +
@@ -72,7 +77,7 @@ namespace PromptQuest.Web.AI
             }
         }
 
-        private async Task<string> AskAsync(LevelDefinition level, string prompt, CancellationToken ct)
+        protected internal virtual async Task<string> AskAsync(LevelDefinition level, string prompt, CancellationToken ct)
         {
             var model = _config["Gemini:Model"];
 
@@ -107,7 +112,7 @@ namespace PromptQuest.Web.AI
         // {CURRENT_CSS} из level.AiScene.BaseCss — не из полного scene.baseCss)
         // плюс общие правила формата и разметка level.AiScene.Html. goal/hint
         // уровня сюда не попадают ни в каком виде.
-        private static string BuildSystemInstruction(LevelDefinition level)
+        internal static string BuildSystemInstruction(LevelDefinition level)
         {
             var instruction = (level.SystemPrompt ?? "").Replace("{CURRENT_CSS}", level.AiScene.BaseCss ?? "");
 

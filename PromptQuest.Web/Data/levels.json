@@ -1,19 +1,23 @@
- [
+[
   {
     "id": "css-01-justify",
     "order": 1,
     "category": "css",
     "title": "Доставь лягушку к кувшинке",
-    "goal": "Лягушка должна оказаться на кувшинке у правого края пруда.",
-    "hint": "Опиши ИИ не приём, а результат: где именно должна оказаться лягушка.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 1,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:400px;top:8px;width:72px;height:72px;background:#2f8f4e}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -34,16 +38,20 @@
     "order": 2,
     "category": "css",
     "title": "Опусти лягушку на дно пруда",
-    "goal": "Лягушка должна опуститься на кувшинку у нижнего края пруда.",
-    "hint": "Опиши, у какого края по вертикали должна оказаться лягушка.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 1,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:8px;top:180px;width:72px;height:72px;background:#2f8f4e}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -64,16 +72,20 @@
     "order": 3,
     "category": "css",
     "title": "Собери лягушку в центре пруда",
-    "goal": "Лягушка должна оказаться ровно в центре пруда.",
-    "hint": "Опиши положение и по горизонтали, и по вертикали одновременно.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 1,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}#lily{left:204px;top:94px;width:72px;height:72px;background:#2f8f4e}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;width:480px;height:260px;background:#1b3a4b;position:relative}#frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -94,16 +106,20 @@
     "order": 4,
     "category": "css",
     "title": "Расставь лягушек по своим кувшинкам",
-    "goal": "Каждая лягушка должна оказаться на кувшинке своего цвета: порядок расположения кувшинок зеркальный по отношению к порядку лягушек.",
-    "hint": "Опиши, что видимый порядок лягушек должен быть развёрнут в обратную сторону.",
+    "goal": "Посади каждую лягушку на кувшинку её цвета.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 2,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;justify-content:space-between;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px}#frog-red{background:#e74c3c}#frog-green{background:#7ed957}#frog-blue{background:#4aa8ff}.lily{top:8px;width:72px;height:72px}#lily-red{background:#c0392b;left:400px}#lily-green{background:#2f8f4e;left:204px}#lily-blue{background:#1b5faa;left:8px}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;justify-content:space-between;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px}#frog-red{background:#e74c3c}#frog-green{background:#7ed957}#frog-blue{background:#4aa8ff}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -138,16 +154,20 @@
     "order": 5,
     "category": "css",
     "title": "Расставь лягушек равномерно",
-    "goal": "Три лягушки должны стоять равномерно по ширине пруда, крайние — вплотную к краям.",
-    "hint": "Опиши равные промежутки между лягушками и то, что крайние прижаты к границам.",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 2,
     "injectionMode": "styleAppend",
     "scene": {
       "html": "<div id=\"pond\"><div id=\"frog-1\" class=\"frog\"></div><div id=\"frog-2\" class=\"frog\"></div><div id=\"frog-3\" class=\"frog\"></div><div id=\"lily-1\" class=\"lily\"></div><div id=\"lily-2\" class=\"lily\"></div><div id=\"lily-3\" class=\"lily\"></div></div>",
       "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px;background:#7ed957}.lily{top:8px;width:72px;height:72px;background:#2f8f4e}#lily-1{left:8px}#lily-2{left:204px}#lily-3{left:400px}"
     },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog-1\" class=\"frog\"></div><div id=\"frog-2\" class=\"frog\"></div><div id=\"frog-3\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:flex;box-sizing:border-box;padding:16px;align-items:flex-start;width:480px;height:260px;background:#1b3a4b;position:relative}.frog{width:56px;height:56px;background:#7ed957}"
+    },
     "codeTemplate": "#pond {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -182,16 +202,20 @@
     "order": 6,
     "category": "css",
     "title": "Посади лягушку в нужную клетку",
-    "goal": "Лягушка должна попасть в правую нижнюю клетку сетки 3×3.",
-    "hint": "Опиши, в каком столбце и в какой строке сетки должна оказаться лягушка.",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
     "difficulty": 2,
     "injectionMode": "styleAppend",
     "scene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div id=\"frog\" class=\"frog\"></div><div id=\"lily-target\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#frog{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}#lily-target{position:static;width:50px;height:50px;grid-column:3;grid-row:3;align-self:center;justify-self:center}"
+    },
+    "aiScene": {
       "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div id=\"frog\" class=\"frog\"></div></div>",
       "baseCss": "#pond{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#frog{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}"
     },
     "codeTemplate": "#frog {\n  \n}",
-    "systemPrompt": "Ты генерируешь только CSS. Верни CSS-правила без пояснений и без markdown.",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
@@ -201,7 +225,178 @@
           "kind": "containedIn",
           "subject": "#frog",
           "target": "#cell-9",
-          "description": "Лягушка находится в правой нижней клетке"
+          "description": "Лягушка находится в клетке с кувшинкой"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-07-two-spots",
+    "order": 7,
+    "category": "css",
+    "title": "Расставь двух лягушек по местам",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 2,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog-a\" class=\"frog\"></div><div id=\"frog-b\" class=\"frog\"></div><div id=\"lily-a\" class=\"lily\"></div><div id=\"lily-b\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{width:480px;height:260px;background:#1b3a4b;position:relative}.frog{position:absolute;top:0;left:0;width:56px;height:56px}#frog-a{background:#7ed957}#frog-b{background:#4aa8ff}.lily{width:72px;height:72px}#lily-a{left:364px;top:24px}#lily-b{left:44px;top:164px}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog-a\" class=\"frog\"></div><div id=\"frog-b\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{width:480px;height:260px;background:#1b3a4b;position:relative}.frog{position:absolute;top:0;left:0;width:56px;height:56px}#frog-a{background:#7ed957}#frog-b{background:#4aa8ff}"
+    },
+    "codeTemplate": "#frog-a {\n  \n}\n\n#frog-b {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "a-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-a",
+          "target": "#lily-a",
+          "description": "Первая лягушка на своей кувшинке"
+        },
+        {
+          "id": "b-on-lily",
+          "kind": "overlapCenter",
+          "subject": "#frog-b",
+          "target": "#lily-b",
+          "description": "Вторая лягушка на своей кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-08-big-lily",
+    "order": 8,
+    "category": "css",
+    "title": "Большая кувшинка на двоих",
+    "goal": "Посади лягушку на кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div><div id=\"lily-zone\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}#frog{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}#lily-zone{position:static;grid-column:1 / span 2;grid-row:1 / span 2}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"frog\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}#frog{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}"
+    },
+    "codeTemplate": "#frog {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "frog-in-lily-zone",
+          "kind": "containedIn",
+          "subject": "#frog",
+          "target": "#lily-zone",
+          "description": "Лягушка находится на кувшинке"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-09-two-ponds",
+    "order": 9,
+    "category": "css",
+    "title": "Два пруда — два задания",
+    "goal": "Посади каждую лягушку на её кувшинку.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div id=\"grid-a\"><div class=\"cell\" id=\"cell-a1\"></div><div class=\"cell\" id=\"cell-a2\"></div><div class=\"cell\" id=\"cell-a3\"></div><div class=\"cell\" id=\"cell-a4\"></div><div id=\"frog-a\" class=\"frog\"></div><div id=\"lily-a\" class=\"lily\"></div></div><div id=\"grid-b\"><div class=\"cell\" id=\"cell-b1\"></div><div class=\"cell\" id=\"cell-b2\"></div><div class=\"cell\" id=\"cell-b3\"></div><div class=\"cell\" id=\"cell-b4\"></div><div class=\"cell\" id=\"cell-b5\"></div><div class=\"cell\" id=\"cell-b6\"></div><div class=\"cell\" id=\"cell-b7\"></div><div class=\"cell\" id=\"cell-b8\"></div><div class=\"cell\" id=\"cell-b9\"></div><div id=\"frog-b\" class=\"frog\"></div><div id=\"lily-b\" class=\"lily\"></div></div></div>",
+      "baseCss": "#pond{display:flex;gap:24px;align-items:flex-start}#grid-a{display:grid;grid-template-columns:repeat(2,100px);grid-template-rows:repeat(2,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px}#grid-b{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px}.cell{background:#234b5e}#frog-a,#frog-b{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}#lily-a,#lily-b{position:static;width:50px;height:50px;grid-column:2;grid-row:2;align-self:center;justify-self:center}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div id=\"grid-a\"><div class=\"cell\" id=\"cell-a1\"></div><div class=\"cell\" id=\"cell-a2\"></div><div class=\"cell\" id=\"cell-a3\"></div><div class=\"cell\" id=\"cell-a4\"></div><div id=\"frog-a\" class=\"frog\"></div></div><div id=\"grid-b\"><div class=\"cell\" id=\"cell-b1\"></div><div class=\"cell\" id=\"cell-b2\"></div><div class=\"cell\" id=\"cell-b3\"></div><div class=\"cell\" id=\"cell-b4\"></div><div class=\"cell\" id=\"cell-b5\"></div><div class=\"cell\" id=\"cell-b6\"></div><div class=\"cell\" id=\"cell-b7\"></div><div class=\"cell\" id=\"cell-b8\"></div><div class=\"cell\" id=\"cell-b9\"></div><div id=\"frog-b\" class=\"frog\"></div></div></div>",
+      "baseCss": "#pond{display:flex;gap:24px;align-items:flex-start}#grid-a{display:grid;grid-template-columns:repeat(2,100px);grid-template-rows:repeat(2,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px}#grid-b{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px}.cell{background:#234b5e}#frog-a,#frog-b{width:56px;height:56px;background:#7ed957;align-self:center;justify-self:center}"
+    },
+    "codeTemplate": "#frog-a {\n  \n}\n\n#frog-b {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "a-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-a",
+          "target": "#cell-a4",
+          "description": "Первая лягушка находится в клетке с кувшинкой"
+        },
+        {
+          "id": "b-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-b",
+          "target": "#cell-b5",
+          "description": "Вторая лягушка находится в клетке с кувшинкой"
+        }
+      ]
+    },
+    "forbiddenPatterns": []
+  },
+  {
+    "id": "css-10-four-colors",
+    "order": 10,
+    "category": "css",
+    "title": "Четыре лягушки, четыре кувшинки",
+    "goal": "Посади каждую лягушку на кувшинку её цвета.",
+    "hint": "Опиши ИИ то, что видишь на картинке.",
+    "difficulty": 3,
+    "injectionMode": "styleAppend",
+    "scene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div><div id=\"lily-yellow\" class=\"lily\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-red\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;grid-template-columns:repeat(2,100px);grid-template-rows:repeat(2,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-red{background:#e74c3c}#frog-green{background:#7ed957}#frog-blue{background:#4aa8ff}#frog-yellow{background:#f4d03f}.lily{position:static;width:50px;height:50px;align-self:center;justify-self:center}#lily-yellow{background:#d4ac0d;grid-column:1;grid-row:1}#lily-green{background:#2f8f4e;grid-column:2;grid-row:1}#lily-red{background:#c0392b;grid-column:1;grid-row:2}#lily-blue{background:#1b5faa;grid-column:2;grid-row:2}"
+    },
+    "aiScene": {
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div id=\"frog-red\" class=\"frog\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"frog-yellow\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;grid-template-columns:repeat(2,100px);grid-template-rows:repeat(2,100px);grid-auto-rows:100px;gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-red{background:#e74c3c}#frog-green{background:#7ed957}#frog-blue{background:#4aa8ff}#frog-yellow{background:#f4d03f}"
+    },
+    "codeTemplate": "#frog-red {\n  \n}\n\n#frog-green {\n  \n}\n\n#frog-blue {\n  \n}\n\n#frog-yellow {\n  \n}",
+    "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
+    "validation": {
+      "tolerancePx": 8,
+      "timeoutMs": 2000,
+      "checks": [
+        {
+          "id": "yellow-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-yellow",
+          "target": "#cell-1",
+          "description": "Жёлтая лягушка находится в клетке со своей кувшинкой"
+        },
+        {
+          "id": "green-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-green",
+          "target": "#cell-2",
+          "description": "Зелёная лягушка находится в клетке со своей кувшинкой"
+        },
+        {
+          "id": "red-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-red",
+          "target": "#cell-3",
+          "description": "Красная лягушка находится в клетке со своей кувшинкой"
+        },
+        {
+          "id": "blue-in-cell",
+          "kind": "containedIn",
+          "subject": "#frog-blue",
+          "target": "#cell-4",
+          "description": "Синяя лягушка находится в клетке со своей кувшинкой"
         }
       ]
     },
