@@ -21,9 +21,9 @@ public class LevelCatalogTests
     public static IEnumerable<object[]> LevelIds() => Levels.Select(l => new object[] { l.Id });
 
     [Fact]
-    public void CatalogHasTenLevels()
+    public void CatalogHasThirteenLevels()
     {
-        Assert.Equal(10, Levels.Count);
+        Assert.Equal(13, Levels.Count);
     }
 
     [Theory]

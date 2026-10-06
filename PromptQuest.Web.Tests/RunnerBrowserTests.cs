@@ -48,6 +48,12 @@ public sealed class RunnerBrowserTests : IClassFixture<RunnerBrowserFixture>, IA
         ["css-09-two-ponds"] = "#frog-a{grid-column:2;grid-row:2}#frog-b{grid-column:2;grid-row:2}",
         ["css-10-four-colors"] =
             "#frog-yellow{grid-column:1;grid-row:1}#frog-green{grid-column:2;grid-row:1}#frog-red{grid-column:1;grid-row:2}#frog-blue{grid-column:2;grid-row:2}",
+        ["css-11-shift"] =
+            "#frog-red{grid-column:5;grid-row:4}#frog-blue{grid-column:7;grid-row:4}#frog-yellow{grid-column:6;grid-row:6}#frog-green{grid-column:9;grid-row:5}#frog-purple{grid-column:8;grid-row:7}#frog-orange{grid-column:5;grid-row:7}",
+        ["css-12-rainbow"] =
+            "#frog-yellow{grid-column:4;grid-row:4}#frog-purple{grid-column:7;grid-row:4}#frog-red{grid-column:2;grid-row:4}#frog-blue{grid-column:6;grid-row:4}#frog-orange{grid-column:3;grid-row:4}#frog-green{grid-column:5;grid-row:4}",
+        ["css-13-rotate"] =
+            "#frog-red{grid-column:7;grid-row:7}#frog-blue{grid-column:5;grid-row:6}#frog-yellow{grid-column:6;grid-row:4}#frog-green{grid-column:3;grid-row:7}#frog-purple{grid-column:2;grid-row:5}#frog-orange{grid-column:4;grid-row:4}",
     };
 
     private readonly RunnerBrowserFixture _fixture;
@@ -253,6 +259,9 @@ public sealed class RunnerBrowserTests : IClassFixture<RunnerBrowserFixture>, IA
             ["css-08-big-lily"] = ("#frog-1", "#lily-zone"),
             ["css-09-two-ponds"] = ("#frog-a", "#cell-a4"),
             ["css-10-four-colors"] = ("#frog-yellow", "#cell-1"),
+            ["css-11-shift"] = ("#frog-red", "#lily-red"),
+            ["css-12-rainbow"] = ("#frog-yellow", "#lily-yellow"),
+            ["css-13-rotate"] = ("#frog-red", "#lily-red"),
         };
         return map.Select(kv => new object[] { kv.Key, kv.Value.Frog, kv.Value.Target });
     }
