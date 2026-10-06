@@ -241,32 +241,32 @@
     "difficulty": 2,
     "injectionMode": "styleAppend",
     "scene": {
-      "html": "<div id=\"pond\"><div id=\"frog-a\" class=\"frog\"></div><div id=\"frog-b\" class=\"frog\"></div><div id=\"lily-a\" class=\"lily\"></div><div id=\"lily-b\" class=\"lily\"></div></div>",
-      "baseCss": "#pond{width:480px;height:260px;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:60px 60px;position:relative}.frog{position:absolute;top:0;width:56px;height:56px}#frog-a{background:#7ed957;left:0}#frog-b{background:#4aa8ff;left:424px}.lily{width:72px;height:72px}#lily-a{background:#f5a623;left:364px;top:24px}#lily-b{background:#e84393;left:44px;top:164px}"
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div class=\"cell\" id=\"cell-10\"></div><div class=\"cell\" id=\"cell-11\"></div><div class=\"cell\" id=\"cell-12\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div><div id=\"lily-green\" class=\"lily\"></div><div id=\"lily-blue\" class=\"lily\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:420px;grid-template-columns:repeat(4,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:3;grid-row:1}#cell-4{grid-column:4;grid-row:1}#cell-5{grid-column:1;grid-row:2}#cell-6{grid-column:2;grid-row:2}#cell-7{grid-column:3;grid-row:2}#cell-8{grid-column:4;grid-row:2}#cell-9{grid-column:1;grid-row:3}#cell-10{grid-column:2;grid-row:3}#cell-11{grid-column:3;grid-row:3}#cell-12{grid-column:4;grid-row:3}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-green{background:#7ed957;grid-column:1;grid-row:1}#frog-blue{background:#4aa8ff;grid-column:4;grid-row:1}.lily{position:static;width:72px;height:72px;align-self:center;justify-self:center}#lily-green{background:#2f8f4e;grid-column:3;grid-row:3}#lily-blue{background:#1b5faa;grid-column:2;grid-row:2}"
     },
     "aiScene": {
-      "html": "<div id=\"pond\"><div id=\"frog-a\" class=\"frog\"></div><div id=\"frog-b\" class=\"frog\"></div></div>",
-      "baseCss": "#pond{width:480px;height:260px;background:#1b3a4b;background-image:linear-gradient(to right,rgba(255,255,255,0.15) 1px,transparent 1px),linear-gradient(to bottom,rgba(255,255,255,0.15) 1px,transparent 1px);background-size:60px 60px;position:relative}.frog{position:absolute;top:0;width:56px;height:56px}#frog-a{background:#7ed957;left:0}#frog-b{background:#4aa8ff;left:424px}"
+      "html": "<div id=\"pond\"><div class=\"cell\" id=\"cell-1\"></div><div class=\"cell\" id=\"cell-2\"></div><div class=\"cell\" id=\"cell-3\"></div><div class=\"cell\" id=\"cell-4\"></div><div class=\"cell\" id=\"cell-5\"></div><div class=\"cell\" id=\"cell-6\"></div><div class=\"cell\" id=\"cell-7\"></div><div class=\"cell\" id=\"cell-8\"></div><div class=\"cell\" id=\"cell-9\"></div><div class=\"cell\" id=\"cell-10\"></div><div class=\"cell\" id=\"cell-11\"></div><div class=\"cell\" id=\"cell-12\"></div><div id=\"frog-green\" class=\"frog\"></div><div id=\"frog-blue\" class=\"frog\"></div></div>",
+      "baseCss": "#pond{display:grid;box-sizing:border-box;width:420px;grid-template-columns:repeat(4,100px);grid-template-rows:repeat(3,100px);gap:4px;background:#1b3a4b;padding:4px;position:relative}.cell{background:#234b5e}#cell-1{grid-column:1;grid-row:1}#cell-2{grid-column:2;grid-row:1}#cell-3{grid-column:3;grid-row:1}#cell-4{grid-column:4;grid-row:1}#cell-5{grid-column:1;grid-row:2}#cell-6{grid-column:2;grid-row:2}#cell-7{grid-column:3;grid-row:2}#cell-8{grid-column:4;grid-row:2}#cell-9{grid-column:1;grid-row:3}#cell-10{grid-column:2;grid-row:3}#cell-11{grid-column:3;grid-row:3}#cell-12{grid-column:4;grid-row:3}.frog{width:56px;height:56px;align-self:center;justify-self:center}#frog-green{background:#7ed957;grid-column:1;grid-row:1}#frog-blue{background:#4aa8ff;grid-column:4;grid-row:1}"
     },
-    "codeTemplate": "#frog-a {\n  \n}\n\n#frog-b {\n  \n}",
+    "codeTemplate": "#frog-green {\n  \n}\n\n#frog-blue {\n  \n}",
     "systemPrompt": "Ты получаешь HTML-разметку сцены с прудом (#pond) и одной или несколькими лягушками (элементы с классом frog, у каждой свой id). Игрок словами описывает, куда и как должны переместиться лягушки. Управляй только CSS: при необходимости меняй свойства контейнера (#pond или вложенных сеток) и/или свойства конкретных лягушек по их id. Не добавляй и не убирай элементы, пиши только CSS-правила для существующих селекторов.\n\nТекущий CSS сцены:\n{CURRENT_CSS}",
     "validation": {
       "tolerancePx": 8,
       "timeoutMs": 2000,
       "checks": [
         {
-          "id": "a-on-lily",
+          "id": "green-on-lily",
           "kind": "overlapCenter",
-          "subject": "#frog-a",
-          "target": "#lily-a",
-          "description": "Первая лягушка на своей кувшинке"
+          "subject": "#frog-green",
+          "target": "#lily-green",
+          "description": "Зелёная лягушка на своей кувшинке"
         },
         {
-          "id": "b-on-lily",
+          "id": "blue-on-lily",
           "kind": "overlapCenter",
-          "subject": "#frog-b",
-          "target": "#lily-b",
-          "description": "Вторая лягушка на своей кувшинке"
+          "subject": "#frog-blue",
+          "target": "#lily-blue",
+          "description": "Синяя лягушка на своей кувшинке"
         }
       ]
     },
