@@ -1,298 +1,434 @@
 # PromptQuest
 
-Обучающая веб-игра для тренировки prompt-инжиниринга: игрок видит сцену (пруд,
-лягушка, кувшинка) и короткую цель, описывает нужный результат на естественном
-языке, ИИ превращает промт в CSS, код применяется к сцене в изолированном
-`iframe`, и автоматический валидатор проверяет, достигнута ли цель. Единственная
-метрика успеха — длина промта: игра учит формулировать задачу точно и коротко,
-а не писать CSS.
+A learning game for practicing prompt engineering. The player sees a scene
+(a pond, a frog, a lily pad) and a short goal, and describes the result they
+want in plain language. An AI (Google Gemini) turns that description into
+CSS; the CSS is applied to the scene inside an isolated `iframe`, and an
+automated validator checks whether the goal was reached. The only success
+metric is prompt length: the game is about describing the result precisely
+and concisely, not about writing CSS by hand.
 
-## Стек
+The AI never sees the lily pad (the target) or the player-facing goal/hint
+text — only the frog(s) and, on grid levels, the frog's starting cell. The
+player is the only one who can see where things need to go; translating
+that into words the AI can act on is the whole exercise.
 
-- **Backend**: ASP.NET Core 9 (Minimal API), один проект `PromptQuest.Web`, раздаёт
-  и API, и статику фронтенда.
-- **База данных**: PostgreSQL через EF Core 9 (`Npgsql.EntityFrameworkCore.PostgreSQL`).
-  `Development` по умолчанию работает без БД (in-memory хранилище — общей базы
-  для разработки пока нет); все остальные окружения, и `Development` с явно
-  выключенным флагом, требуют PostgreSQL и строку подключения — см. «Запуск
-  локально».
-- **AI**: Google Gemini через пакет `Google.GenAI`. Модель и ключ берутся из
-  конфигурации (`Gemini:Model`, `Gemini:ApiKey`). Лимит запросов к ИИ — на игрока,
-  встроенным `System.Threading.RateLimiting` (без дополнительных пакетов).
-- **Фронтенд**: чистый HTML/CSS/JavaScript (ES-модули), без фреймворков и сборщиков.
-- **Движок валидации**: sandbox-`iframe` (`sandbox="allow-scripts"`, без
-  `allow-same-origin`) + протокол `postMessage` — код игрока и ответ ИИ никогда не
-  выполняются на сервере и не имеют доступа к DOM/хранилищам родительской страницы.
+## Stack
 
-## Запуск локально
+- **Backend**: ASP.NET Core 9 (Minimal API), one project (`PromptQuest.Web`)
+  serving both the JSON API and the static frontend.
+- **Database**: PostgreSQL via EF Core 9 (`Npgsql.EntityFrameworkCore.PostgreSQL`).
+  Two storage modes, selected by `PromptQuest:UseInMemoryStorage` — see
+  "Running locally" below.
+- **AI**: Google Gemini via the `Google.GenAI` package. Model and API key
+  come from configuration (`Gemini:Model`, `Gemini:ApiKey`). Requests are
+  rate-limited per player using the built-in `System.Threading.RateLimiting`
+  (no extra package).
+- **Frontend**: plain HTML/CSS/JavaScript (ES modules), no framework and no
+  build step.
+- **Validation engine**: a sandboxed `iframe` (`sandbox="allow-scripts"`,
+  without `allow-same-origin`) plus a `postMessage` protocol — player code
+  and the AI's output never run on the server and never get access to the
+  parent page's DOM or storage.
 
-Два режима, выбираются `PromptQuest:UseInMemoryStorage` (работает только в
-`Development`; в любом другом окружении PostgreSQL обязательна всегда):
+## Running locally
 
-### Без БД (по умолчанию в Development)
+Two storage modes, selected by `PromptQuest:UseInMemoryStorage` (this flag
+only has any effect in the `Development` environment; every other
+environment always requires PostgreSQL):
 
-Общей базы для разработки пока нет, поэтому `appsettings.Development.json`
-по умолчанию включает `PromptQuest:UseInMemoryStorage=true` — игроки, попытки
-и прогресс хранятся в памяти процесса и **теряются при каждом перезапуске**.
+### Without a database (default in Development)
+
+There is no shared development database yet, so
+`appsettings.Development.json` defaults `PromptQuest:UseInMemoryStorage` to
+`true` — players, attempts and progress live in process memory and **are
+lost on every restart**.
 
 ```
 dotnet run --project PromptQuest.Web
 ```
 
-Открыть `http://localhost:5280` (профиль `http` из `launchSettings.json`).
+Open `http://localhost:5280` (the `http` profile in `launchSettings.json`).
 
-### С PostgreSQL
+### With PostgreSQL
 
-Нужно явно выключить флаг и задать строку подключения — удобнее всего через
+Turn the flag off explicitly and supply a connection string — the
+recommended way is
 [`dotnet user-secrets`](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-(секреты лежат вне репозитория, в домашней папке пользователя), не через
+(secrets live outside the repository, in your user profile), not
 `appsettings*.json`:
 
 ```
 dotnet user-secrets init --project PromptQuest.Web
 dotnet user-secrets set "PromptQuest:UseInMemoryStorage" "false" --project PromptQuest.Web
-dotnet user-secrets set "ConnectionStrings:Default" "Host=<хост>;Database=<имя БД>;Username=<пользователь>;Password=<пароль>" --project PromptQuest.Web
-dotnet user-secrets set "Gemini:ApiKey" "<ключ Gemini API>" --project PromptQuest.Web
+dotnet user-secrets set "ConnectionStrings:Default" "Host=<host>;Database=<db>;Username=<user>;Password=<password>" --project PromptQuest.Web
+dotnet user-secrets set "Gemini:ApiKey" "<Gemini API key>" --project PromptQuest.Web
 dotnet run --project PromptQuest.Web
 ```
 
-Без строки подключения (или с пустым `Host`/`Database`/`Username`) в этом
-режиме приложение завершится с понятной ошибкой конфигурации сразу при
-старте — не откатывается на in-memory молча. При старте в `Development` с
-этим режимом схема (`Players`, `Attempts`, `LevelProgresses`)
-создаётся/обновляется автоматически (`Database.Migrate()`); в in-memory
-режиме миграции не запускаются вовсе.
+Without a connection string (or with an empty `Host`/`Database`/`Username`)
+the app fails fast at startup with a clear configuration error in this mode
+— it never falls back to in-memory silently. In `Development`, with this
+mode on, the schema (`Players`, `Attempts`, `LevelProgresses`) is
+created/updated automatically on startup (`Database.Migrate()`); in
+in-memory mode no migration runs at all.
 
-Для окружений без собственного шага деплоя миграции можно накатить вручную:
+For environments with their own deployment step, migrations can be applied
+manually instead:
 
 ```
 dotnet ef database update --project PromptQuest.Web
 ```
 
-(требует `dotnet-ef`: `dotnet tool install --global dotnet-ef`, если не
-установлен). Миграции лежат в `PromptQuest.Web/Migrations/` (`InitialCreate`,
-`AddBestPromptLength`).
+(requires the `dotnet-ef` tool: `dotnet tool install --global dotnet-ef` if
+not already installed). Migrations live in `PromptQuest.Web/Migrations/`
+(`InitialCreate`, `AddBestPromptLength`).
 
-**Секреты никогда не хранить в `appsettings.json`** — только через
-`dotnet user-secrets` (разработка) или переменные окружения (прод/CI). На
-момент последнего аудита в `PromptQuest.Web/appsettings.json` в репозитории
-был обнаружен закоммиченный ключ Gemini API — это нужно устранить отдельно
-(ротация ключа + удаление из текущего файла и из истории git).
+**Secrets must never be stored in `appsettings.json`** — only via
+`dotnet user-secrets` (development) or environment variables (prod/CI). As
+of the last audit, `PromptQuest.Web/appsettings.json` in this repository
+still contains a committed Gemini API key — see "Known limitations".
 
-### Тесты
+### Running tests
 
-Разовая настройка перед первым запуском браузерных тестов — установить
-Chromium для Playwright (один раз на машину, не часть `dotnet test`):
+One-time setup before the first run of the browser tests — install Chromium
+for Playwright (once per machine, not part of `dotnet test` itself):
 
 ```
 dotnet build PromptQuest.Web.Tests
 pwsh PromptQuest.Web.Tests/bin/Debug/net9.0/playwright.ps1 install chromium
 ```
 
-(на Windows можно `powershell` вместо `pwsh`). Без этого шага тесты из
-`RunnerBrowserTests.cs` упадут с ошибкой о недостающем браузере — остальные
-тесты проекта это не затрагивает.
+(`powershell` instead of `pwsh` works on Windows). Without this step the
+tests in `RunnerBrowserTests.cs` fail with a missing-browser error; the rest
+of the suite is unaffected.
 
 ```
 dotnet test PromptQuest.Web.Tests
 ```
 
-Тесты не вызывают реальный Gemini API (генерация кода подменена заглушкой) и не
-открывают соединение с реальной БД: HTTP-тесты (`ApiIntegrationTests`,
-`PromptQuestWebFactory`) поднимают приложение под окружением `Development` с
-`PromptQuest:UseInMemoryStorage=true` — тот же переключатель и та же in-memory
-ветка, что использует обычный локальный запуск без БД (см. «Запуск локально»);
-DB-ветка (`AddStorage_SelectsLeaderboardServiceByConfiguration`) проверяется
-только разрешением зависимостей, без реального подключения. Покрывают: каталог уровней (вид сцены для ИИ не содержит
-кувшинок/данных о положении цели, `goal` не содержит слов/цифр, выдающих положение),
-сборку системной инструкции для ИИ (подстановка `{CURRENT_CSS}`, изоляция
-`goal`/`hint`), реакцию на сбой провайдера (исключение/таймаут/пустой ответ —
-всегда `Success=false` и пустой `Code`), подсчёт и сортировку лидерборда, выбор
-реализации `ILeaderboardService` по конфигурации, ограничение частоты запросов
-(429 при превышении лимита), и — в настоящем Chromium через `Microsoft.Playwright`
-(`RunnerBrowserTests.cs`) — что каждый из 13 уровней реально проходится своим
-эталонным CSS-решением и не проходится пустым кодом, что сцена не создаёт
-скролл внутри `iframe` и что кувшинка на сцене видима (ненулевой размер,
-непрозрачный фон). 93 теста в сумме.
+Tests never call the real Gemini API (code generation is replaced with a
+fake implementation) and never open a connection to a real database: the
+HTTP tests (`ApiIntegrationTests`, `PromptQuestWebFactory`) boot the app
+under `Development` with `PromptQuest:UseInMemoryStorage=true` — the same
+switch and the same in-memory branch a normal local run without a database
+uses; the EF/Postgres branch
+(`AddStorage_SelectsLeaderboardServiceByConfiguration`) is only checked by
+resolving dependencies, without a real connection. As of this writing the
+suite has 93 tests and covers: the level catalog (the AI-facing scene
+contains no lily pads or target-position data, `goal` text contains no
+words/numbers giving away the position), building the AI system instruction
+(`{CURRENT_CSS}` substitution, `goal`/`hint` isolation), provider-failure
+handling (exception/timeout/empty response always yield `Success=false`
+and empty `Code`), leaderboard counting/sorting, selecting the
+`ILeaderboardService` implementation by configuration, the per-player AI
+rate limit (429 once exceeded), and — in a real Chromium instance via
+`Microsoft.Playwright` (`RunnerBrowserTests.cs`) — that each of the 13
+levels is actually solved by its own reference CSS and not solved by empty
+code, that the scene never creates a scroll inside the `iframe`, and that
+the lily pad is visible (non-zero size, opaque fill).
 
-## Игровой цикл
+## Repository structure
 
-Ввод никнейма → список уровней → экран игры (сцена в `iframe` + поле промта,
-результат ИИ применяется автоматически) → таблица лидеров по уровню.
+### Root
 
-Промт игрока отправляется ИИ, который возвращает CSS-правила; результат
-применяется к сцене, и раннер внутри `iframe` проверяет, достигнута ли цель
-уровня. Ручной ввод CSS (без ИИ) остаётся в коде как альтернативный режим,
-управляемый флагом конфигурации `ManualCodeEntry` (по умолчанию выключен —
-активен режим с ИИ).
-
-### Метрика и лидерборд
-
-Единственный показатель успеха на уровне — длина успешного промта в Unicode-
-символах после `Trim()`, посчитанная на сервере по тексту, уже сохранённому в
-попытке (клиент не может передать своё значение). Личный рекорд по уровню —
-минимальная длина среди успешных попыток, обновляется только если новый
-результат строго короче. Время прохождения и число попыток не участвуют ни в
-рекордах, ни в лидерборде. Экран «Лидеры» сразу показывает таблицу выбранного
-(первого по порядку) уровня и выпадающий список для переключения — без вкладок
-и без общего зачёта: суммировать длины промтов разных уровней как рейтинг не
-имеет смысла, поэтому `GET /api/leaderboard/global` не существует (только
-`GET /api/leaderboard/levels/{levelId}`). Колонки таблицы — место, никнейм,
-длина промта в символах (`rank`/`nickname`/`promptLength` в ответе API).
-
-### Как ИИ получает задачу
-
-На каждый промт игрока `AI/AiAgent.cs` обращается к Gemini с системной
-инструкцией, собранной из `level.SystemPrompt` конкретного уровня (с подстановкой
-`{CURRENT_CSS}` из `level.AiScene.BaseCss`) и разметки `level.AiScene.Html`.
-Игроку видимые `goal`/`hint` в запрос к модели не передаются ни в каком виде —
-модель не может решить уровень по описанию цели, минуя промт игрока (подробности
-— `SPEC-ADDENDUM-01.md`). `level.AiScene` — урезанный вид сцены: содержит те же
-id управляемых элементов (пруд, лягушки, сетка), что и настоящая сцена, но не
-содержит кувшинок и любых данных, по которым можно вывести положение цели —
-правильное решение недостижимо без того, что игрок описал в промте, глядя на
-картинку (подробности — `SPEC-ADDENDUM-02.md`).
-
-При сбое запроса к ИИ (исключение, таймаут, пустой ответ) `GenerateAsync`
-возвращает `Success=false` с пустым `Code` и причиной в `Error` — текст ошибки
-никогда не попадает в `Code`. `POST /api/attempts` в этом случае отвечает `502`
-и не создаёт попытку; при превышении лимита запросов на игрока — `429` с
-заголовком `Retry-After`, попытка тоже не создаётся.
-
-## Уровни
-
-Все 13 уровней — только про лягушек и кувшинки (пруд, сетка и т.п.). `goal`
-везде короткий и не называет положение цели, направление или число; `hint` —
-общий: «Опиши ИИ то, что видишь на картинке.» Игрок видит кувшинку на картинке,
-ИИ её не видит вовсе (см. «Как ИИ получает задачу») — скопировать `goal` в поле
-промта недостаточно, чтобы пройти уровень.
-
-| ID | Задача для игрока | Проверка |
-|---|---|---|
-| `css-01-justify` | Одна лягушка и кувшинка у правого края пруда | `overlapCenter` |
-| `css-02-align` | Одна лягушка и кувшинка у нижнего края пруда | `overlapCenter` |
-| `css-03-center` | Одна лягушка и кувшинка в центре пруда | `overlapCenter` |
-| `css-04-reverse` | Три лягушки на кувшинках своего цвета, порядок зеркальный | 3 × `overlapCenter` |
-| `css-05-spread` | Три лягушки равномерно по ширине, крайние у краёв | 3 × `overlapCenter` |
-| `css-06-grid` | Сетка 3×3, кувшинка в одной клетке | `containedIn` |
-| `css-07-two-spots` | Сетка 4×3, две лягушки, у каждой кувшинка её цвета в своей клетке | 2 × `overlapCenter` |
-| `css-08-big-lily` | Большая кувшинка на 2×2 клетки сетки 3×3 — обе лягушки должны поместиться на неё, не перекрывая друг друга | 2 × `containedIn` + `noOverlap` |
-| `css-09-two-ponds` | Два независимых пруда-сетки, в каждом своя лягушка и кувшинка | 2 × `containedIn` |
-| `css-10-four-colors` | Сетка 4×3, четыре лягушки на отдельных стартовых клетках, каждая — на кувшинку своего цвета | 4 × `containedIn` |
-| `css-11-shift` | Поле 8×6 с подписанными столбцами (A–H) и рядами (1–6); 6 цветных лягушек, у каждой кувшинка сдвинута на один и тот же вектор | 6 × `overlapCenter` |
-| `css-12-rainbow` | Поле 6×3 с подписями; 6 лягушек в случайном порядке сверху, кувшинки снизу — в порядке радуги | 6 × `overlapCenter` |
-| `css-13-rotate` | Сетка 6×6 без подписей; у каждой лягушки кувшинка в точке, симметричной относительно центра поля (поворот на 180°) | 6 × `overlapCenter` |
-
-Движок валидации (`wwwroot/sandbox/runner.js`) умеет оценивать 10 видов проверок
-(`overlapCenter`, `containedIn`, `noOverlap`, `orderX`, `orderY`, `computedStyle`,
-`selectorMatches`, `textContent`, `classOnElements`, `elementCount`) — текущий
-каталог уровней использует `overlapCenter`, `containedIn` и (только `css-08-big-lily`)
-`noOverlap`; остальные виды реализованы и доступны для будущих уровней, но сейчас
-ничем не задействованы.
-
-Уровни 11–13 вводят размеченную сетку (столбцы-буквы, ряды-цифры как реальные
-текстовые узлы в `aiScene.html`, не CSS-`content`) — общий координатный язык для
-игрока и ИИ, не раскрывающий положение кувшинок. Смысл каждого — заменить
-покувшинковое перечисление одним правилом: `css-11-shift` — один и тот же
-сдвиг для всех лягушек; `css-12-rainbow` — фиксированный, называемый одним
-словом порядок кувшинок независимо от перемешанного порядка лягушек;
-`css-13-rotate` — точечная симметрия (поворот на 180°), которую легко спутать
-с отражением («зеркально»), если не называть операцию точно.
-
-### Требования к сцене уровня
-
-Обязательны для `scene`/`aiScene` любого уровня (нарушение — баг сцены, не
-валидатора):
-
-- Лягушки и кувшинки не должны быть участниками авто-размещения контейнера
-  (flex/grid) — то, что их сдвигает или сдвигается из-за них, ломает сцену.
-  В grid-уровнях **у каждой декоративной клетки и у лягушки должен быть явный
-  `grid-column`/`grid-row`**; кувшинка — тоже явным `grid-column`/`grid-row`
-  (с `position:static`, перекрывает свою клетку) либо `position:absolute`
-  внутри позиционированного контейнера для flex-уровней. Так уровни 6/8/9/10
-  были устроены раньше (клетки — авто, кувшинка — явно), из-за чего явное
-  размещение кувшинки «вытесняло» клетку с её местом из авто-алгоритма
-  (CSS Grid сперва резервирует явно размещённые элементы, и только потом
-  раскладывает остальные по оставшимся местам) — сетка рассыпа́лась лесенкой;
-  это и есть причина, по которой чинить нужно именно так, а не иначе.
-- Сцена не создаёт скролл внутри `iframe`; `runner.html` ставит на
-  `html`/`body` `overflow:hidden` и нулевые отступы как последний рубеж, но
-  рассчитывать на обрезание контента не следует — сцену нужно размерить так,
-  чтобы обрезать было нечего. `.sandbox-frame` больше не фиксирован под один
-  размер для всех уровней — раннер измеряет фактический размер `#pond` и
-  подгоняет под него размер iframe (`runner.js`/`sandbox.js`), поэтому у
-  grid-уровней `#pond` должен иметь явный `width`, совпадающий с его
-  собственным `grid-template`-содержимым (с `box-sizing:border-box`, если у
-  `#pond` есть `padding`) — иначе он растягивается на всю доступную ширину
-  вместо своего настоящего размера.
-- Кувшинка — круг или овал со сплошной заливкой контрастного цвета
-  (`.lily` в `runner.html` даёт форму/слой и запасной цвет, но каждый уровень,
-  задающий свой цвет, должен делать это явно — проверено тестом
-  `Scene_DoesNotOverflow_AndLilyIsVisible`). Если на уровне лягушка может
-  оказаться поверх кувшинки её же цвета (css-04/10/11/12/13), кувшинка должна
-  быть крупнее лягушки и/или заметно темнее её оттенка — иначе при точном
-  совпадении их не отличить друг от друга.
-- В исходном положении (до решения игрока) лягушка и кувшинка не перекрываются,
-  и никакие две лягушки не стартуют в одной клетке/точке.
-- Поле без координатной сетки (flex-уровень со свободным `position:absolute`)
-  должно давать игроку нейтральные зрительные ориентиры — иначе целевое
-  положение физически нечем описать словами; в текущем каталоге все
-  многоклеточные уровни устроены как CSS Grid именно по этой причине (у
-  `css-07-two-spots` раньше были только декоративные линии поверх свободных
-  координат — лилии не лежали в клетках; сейчас у него, как и у
-  `css-06`/`css-08`/`css-09`/`css-10`, настоящая сетка). Ориентиры (линии
-  сетки, подписи столбцов/рядов) разрешено включать в `aiScene`; кувшинки и их
-  положение — никогда.
-
-## Структура репозитория
-
-### Корень
-
-| Путь | Назначение |
+| Path | Purpose |
 |---|---|
-| `PromptQuest.sln` | Решение Visual Studio: `PromptQuest.Web` и `PromptQuest.Web.Tests`. |
-| `README.md` | Этот файл. |
-| `SPEC.md` | Описание архитектуры и контрактов системы. |
-| `SPEC-ADDENDUM-01.md` | Принцип изоляции `goal`/`hint` от ИИ и правила формулировки уровней. |
-| `SPEC-ADDENDUM-02.md` | Принцип «скрытой информации» в разметке сцены (`aiScene`). |
-| `.gitignore` / `.gitattributes` | Стандартные игнор-правила и нормализация конца строк. |
+| `PromptQuest.sln` | Solution file: `PromptQuest.Web` and `PromptQuest.Web.Tests`. |
+| `README.md` | This file. |
+| `.gitignore` / `.gitattributes` | Standard ignore rules and line-ending normalization. |
 
 ### `PromptQuest.Web/`
 
-| Путь | Назначение |
+| Path | Purpose |
 |---|---|
-| `Program.cs` | Выбор хранилища через `StorageRegistration.AddStorage` (`PromptQuest:UseInMemoryStorage` — только в `Development`, по умолчанию `true`; везде иначе PostgreSQL), автоприменение миграций на старте в `Development`, если используется PostgreSQL (`Database.Migrate()`), регистрация Gemini-клиента и лимитера запросов, подключение статики и эндпоинтов. |
-| `appsettings.json` / `appsettings.Development.json` | Конфигурация `PromptQuest`, `Gemini`; секреты (`ConnectionStrings:Default`, `Gemini:ApiKey`) сюда не попадают — только через `dotnet user-secrets`/переменные окружения. |
-| `AI/AiAgent.cs` | Реализация `ICodeGenerationService` поверх Gemini: системная инструкция из `level.SystemPrompt` + `level.AiScene`, корректный `Success=false` на любой сбой. |
-| `Configuration/AppOptions.cs` | Типизированная модель секции `PromptQuest` (лимиты промта/кода, таймаут и лимит запросов к ИИ и т.д.). |
-| `Models/` | `Player`, `LevelProgress` (включая `BestPromptLength`), `Attempt` (+ `CodeSource`), `LevelDefinition` (включая `AiScene`), `LevelScene`, `LevelValidation`, `LevelCheck`. |
-| `Dtos/` | Контракты HTTP API (camelCase JSON). |
-| `Services/ICodeGenerationService.cs`, `AiRateLimiter.cs`, `JsonLevelStore.cs`, `ManualCodeGenerationService.cs` | Интерфейс генерации кода, лимитер запросов к ИИ на игрока, чтение `Data/levels.json`, неиспользуемая сейчас заглушка ручного ввода. |
-| `Services/Storage/` | `StorageRegistration.AddStorage` (выбор реализации), интерфейсы `IPlayerStore`/`IAttemptStore`/`ILevelStore`; `Storage/Db/` — EF/Postgres (`AppDbContext`, `AppDbContextFactory` для миграций, `EfPlayerStore`, `EfAttemptStore`, `EfLeaderboardService`); `Storage/InMemory/` — реализации для режима без БД. |
-| `Migrations/` | `InitialCreate` (таблицы `Players`, `Attempts`, `LevelProgresses`), `AddBestPromptLength` (колонка и индекс для метрики). |
-| `Endpoints/` | Minimal API: игроки, уровни, попытки, таблица лидеров по уровню. |
-| `Data/levels.json` | Каталог из 13 уровней, у каждого `scene` (для рендера и валидатора) и `aiScene` (урезанный вид для ИИ). |
-| `wwwroot/` | Фронтенд: `index.html`, `css/app.css`, `js/*.js` (роутинг, экраны, счётчик символов промта, обёртка над `fetch`), `sandbox/runner.html` + `runner.js` (раннер внутри `iframe`). |
+| `Program.cs` | Storage selection via `StorageRegistration.AddStorage` (`PromptQuest:UseInMemoryStorage`, Development-only, default `true`; PostgreSQL everywhere else), automatic migration on startup in Development when a real database is in use, Gemini client and rate limiter registration, static files (with `Cache-Control: no-cache`) and endpoints. |
+| `appsettings.json` / `appsettings.Development.json` | `PromptQuest`/`Gemini` configuration; secrets (`ConnectionStrings:Default`, `Gemini:ApiKey`) do not belong here — only via `dotnet user-secrets`/environment variables. |
+| `AI/AiAgent.cs` | `ICodeGenerationService` implementation on top of Gemini: system instruction built from `level.SystemPrompt` + `level.AiScene`; any failure returns `Success=false`. |
+| `Configuration/AppOptions.cs` | Typed model of the `PromptQuest` configuration section (prompt/code length limits, AI timeout and rate limit, etc.). |
+| `Models/` | `Player`, `LevelProgress` (incl. `BestPromptLength`), `Attempt` (+ `CodeSource`), `LevelDefinition` (incl. `AiScene`), `LevelScene`, `LevelValidation`, `LevelCheck`. |
+| `Dtos/` | HTTP API contracts (camelCase JSON). |
+| `Services/ICodeGenerationService.cs`, `AiRateLimiter.cs`, `JsonLevelStore.cs`, `ManualCodeGenerationService.cs` | Code-generation interface, per-player AI rate limiter, `Data/levels.json` reader, an unused manual-entry stub. |
+| `Services/Storage/` | `StorageRegistration.AddStorage` (implementation selection), `IPlayerStore`/`IAttemptStore`/`ILevelStore` interfaces; `Storage/Db/` — EF/Postgres (`AppDbContext`, `AppDbContextFactory` for migrations, `EfPlayerStore`, `EfAttemptStore`, `EfLeaderboardService`); `Storage/InMemory/` — the no-database implementations. |
+| `Migrations/` | `InitialCreate` (`Players`, `Attempts`, `LevelProgresses` tables), `AddBestPromptLength` (column + index for the metric). |
+| `Endpoints/` | Minimal API: players, levels, attempts, per-level leaderboard. |
+| `Data/levels.json` | The 13-level catalog; each level has `scene` (for rendering and the validator) and `aiScene` (the reduced view sent to the AI). |
+| `wwwroot/` | Frontend: `index.html`, `css/app.css`, `js/*.js` (routing, screens, prompt character counter, `fetch` wrapper), `sandbox/runner.html` + `runner.js` (the runner inside the `iframe`). |
 
 ### `PromptQuest.Web.Tests/`
 
-xUnit-проект: `LevelCatalogTests`, `AiAgentTests`, `LeaderboardTests`,
-`ApiIntegrationTests` (+ `PromptQuestWebFactory` — тестовая фабрика с подменой
-`ICodeGenerationService`), `RunnerBrowserTests` (реальный Chromium через
-`Microsoft.Playwright` — требует одноразовой установки браузера, см. «Тесты»
-выше). См. «Тесты» выше.
+An xUnit project: `LevelCatalogTests`, `AiAgentTests`, `LeaderboardTests`,
+`ApiIntegrationTests` (+ `PromptQuestWebFactory` — a test factory that
+swaps in a fake `ICodeGenerationService`), `RunnerBrowserTests` (real
+Chromium via `Microsoft.Playwright` — needs a one-time browser install, see
+"Running tests" above).
 
-## Известные ограничения
+## Architecture
 
-- **Нет CI и Dockerfile/деплой-конфигурации** — способ хостинга не определён;
-  тесты запускаются только вручную (`dotnet test`).
-- Код игрока и ответ ИИ выполняются только в браузере игрока, в изолированном
-  `iframe`; результат проверки отправляется на сервер клиентом — это осознанное
-  доверие клиенту, серверной переверификации результата нет.
-- Данные в режиме in-memory (`Development` по умолчанию, пока нет общей базы
-  для разработки) теряются при каждом перезапуске процесса.
-- В `appsettings.json` на момент последнего аудита обнаружен закоммиченный ключ
-  Gemini API — требуется ротация ключа и его удаление из репозитория и истории git.
-- `ManualCodeEntry` (ручной ввод CSS без ИИ) остаётся в коде как альтернативный
-  режим для тестирования движка валидации без реального вызова ИИ, но по
-  умолчанию выключен.
+```
+Browser                                     Server (ASP.NET Core)
++------------------------------+            +------------------------------+
+| UI (index.html + JS modules) |  REST/JSON | Endpoints (Minimal API)      |
+|   - nickname entry           |<---------->|   /api/players               |
+|   - level list                |            |   /api/levels                |
+|   - play screen               |            |   /api/attempts              |
+|   - leaderboard               |            |   /api/leaderboard/levels    |
+|            |                  |            |            |                 |
+|            | postMessage      |            |            v                 |
+|            v                  |            | Services                     |
+| +---------------------------+ |            |   ILevelStore   (json)       |
+| | sandbox <iframe>          | |            |   IPlayerStore  (EF/memory)  |
+| |  runner.html + runner.js  | |            |   IAttemptStore (EF/memory)  |
+| |  scene + code + checks    | |            |   ILeaderboardService        |
+| +---------------------------+ |            |   AiRateLimiter (per player) |
++--------------------------------+           |   ICodeGenerationService     |
+                                              |     (AiAgent -> Gemini)      |
+                                              +------------------------------+
+```
+
+### Interface seams
+
+The codebase is organized around a handful of small interfaces, each with
+an in-memory and a database/AI implementation, so storage and AI concerns
+can be swapped and tested independently:
+
+```csharp
+public interface IPlayerStore
+{
+    Task<Player?> GetAsync(Guid id, CancellationToken ct = default);
+    Task<Player>  CreateAsync(string nickname, CancellationToken ct = default);
+    Task<LevelProgress?> GetProgressAsync(Guid playerId, string levelId,
+                                          CancellationToken ct = default);
+    Task UpsertProgressAsync(LevelProgress progress, CancellationToken ct = default);
+}
+
+public interface IAttemptStore
+{
+    Task<Attempt?> GetAsync(Guid id, CancellationToken ct = default);
+    Task AddAsync(Attempt attempt, CancellationToken ct = default);
+    Task UpdateAsync(Attempt attempt, CancellationToken ct = default);
+    Task<int> CountAsync(Guid playerId, string levelId, CancellationToken ct = default);
+}
+
+public interface ILevelStore
+{
+    Task<IReadOnlyList<LevelDefinition>> GetAllAsync(CancellationToken ct = default);
+    Task<LevelDefinition?> GetAsync(string levelId, CancellationToken ct = default);
+}
+
+public interface ILeaderboardService
+{
+    Task<IReadOnlyList<LeaderboardEntryDto>> GetForLevelAsync(
+        string levelId, int take, CancellationToken ct = default);
+}
+
+public interface ICodeGenerationService
+{
+    Task<CodeGenerationResult> GenerateAsync(
+        LevelDefinition level, string prompt, CancellationToken ct = default);
+}
+
+public sealed record CodeGenerationResult(
+    bool       Success,
+    string     Code,
+    bool       ManualEntry,
+    CodeSource Source,      // Manual | Ai
+    string?    Error);
+```
+
+`ILeaderboardService` has no "global" method on purpose — summing prompt
+lengths across different levels isn't a meaningful ranking, so there is no
+global leaderboard anywhere in the app.
+
+| Interface | In-memory (`Storage/InMemory/`) | Database/AI (`Storage/Db/`, `AI/`) |
+|---|---|---|
+| `IPlayerStore` | `InMemoryPlayerStore` (`ConcurrentDictionary`) | `EfPlayerStore` (PostgreSQL) |
+| `IAttemptStore` | `InMemoryAttemptStore` | `EfAttemptStore` |
+| `ILeaderboardService` | `InMemoryLeaderboardService` | `EfLeaderboardService` |
+| `ILevelStore` | `JsonLevelStore` — reads `Data/levels.json` at startup (used regardless of storage mode) | |
+| `ICodeGenerationService` | `AiAgent` (Gemini) — always used; `ManualCodeGenerationService` exists in the code but is no longer registered in DI | |
+
+Both the in-memory and the EF implementation of a given interface are
+selected together, in one place (`StorageRegistration.AddStorage`), so the
+app never ends up with a mix of in-memory and database-backed stores.
+
+### How the AI gets its task
+
+For every player prompt, `AI/AiAgent.cs` calls Gemini with a system
+instruction built from the level's `SystemPrompt` (with the `{CURRENT_CSS}`
+placeholder resolved from `level.AiScene.BaseCss`, not the full scene) and
+`level.AiScene.Html`. The player-visible `goal`/`hint` text is never sent to
+the model in any form — the model cannot solve a level from a description
+of the goal, bypassing the player's own prompt. `level.AiScene` is a
+reduced view of the scene: it keeps the same element ids as the real scene
+(the pond, the frogs, the grid) but contains no lily pads and no CSS rules
+that would reveal where a target is — the correct solution is unreachable
+without what the player described in their prompt while looking at the
+picture.
+
+On any request failure (exception, timeout, empty response) `GenerateAsync`
+returns `Success=false` with an empty `Code` and the reason in `Error` — the
+error text never ends up in `Code`. `POST /api/attempts` then responds
+`502` and does not create an attempt; exceeding the per-player rate limit
+responds `429` with a `Retry-After` header, and no attempt is created
+either.
+
+## Level description format
+
+`Data/levels.json` is an array of level objects. The fields that matter
+most:
+
+| Field | Type | Description |
+|---|---|---|
+| `id` / `order` / `title` | string / int / string | Identifier, catalog order, player-facing title. |
+| `goal` | string | A short goal, visible only to the player, worded without words/numbers that give away the position. **Never sent to the AI.** |
+| `hint` | string | A generic hint ("Describe to the AI what you see in the picture."). |
+| `scene.html` / `scene.baseCss` | string | The full scene (with lily pads), used to render the game and to validate the result. |
+| `aiScene.html` / `aiScene.baseCss` | string | The reduced scene sent to the AI — same element ids as `scene`, no lily pads, no position-revealing rules. |
+| `codeTemplate` | string | Starting content of the code field (manual-entry mode only). |
+| `systemPrompt` | string | The level's system instruction, sent to the AI together with `aiScene`. |
+| `validation.checks` | array | The checks that must all pass (see "Checks" below). |
+| `forbiddenPatterns` | array | Regular expressions that fail the run immediately if the player's code matches them. |
+
+## Design principles
+
+- **`goal`/`hint` never reach the AI.** The AI call is built from
+  `level.SystemPrompt` + `level.AiScene` only; `level.Goal`/`level.Hint`
+  (and the full `scene`) are never read by `AiAgent`. Otherwise the model
+  could solve the level from the goal text, skipping the player's prompt
+  entirely.
+- **`aiScene` never contains a lily pad or its position.** The AI sees the
+  pond and the frog(s) (and, on grid levels, the grid structure/labels) but
+  never the target — the correct solution is unreachable without the
+  player's own description of what they see.
+- **The only success metric is prompt length** (Unicode characters, server-
+  side `Trim()`, computed from the already-stored `Attempt.Prompt` — the
+  client cannot supply its own value). No score, no elapsed time, no
+  attempt count, no global leaderboard across levels.
+
+## The 13 levels
+
+All levels are about frogs and lily pads inside `#pond` (a flex or grid
+container); `goal`/`hint` never name a position, direction, number or CSS
+property.
+
+| ID | Player's task | Check |
+|---|---|---|
+| `css-01-justify` | Frog and lily pad at the pond's right edge | `overlapCenter` |
+| `css-02-align` | Frog and lily pad at the pond's bottom edge | `overlapCenter` |
+| `css-03-center` | Frog and lily pad in the center of the pond | `overlapCenter` |
+| `css-04-reverse` | Three frogs on their own-colored lily pads, mirrored order | 3x `overlapCenter` |
+| `css-05-spread` | Three frogs spread evenly, the outer two at the edges | 3x `overlapCenter` |
+| `css-06-grid` | 3x3 grid, lily pad in one cell | `containedIn` |
+| `css-07-two-spots` | 4x3 grid, two frogs, each lily pad its own color in its own cell | 2x `overlapCenter` |
+| `css-08-big-lily` | A lily pad spanning 2x2 cells of a 3x3 grid — both frogs must fit on it without overlapping each other | 2x `containedIn` + `noOverlap` |
+| `css-09-two-ponds` | Two independent grid ponds, each with its own frog/lily pair | 2x `containedIn` |
+| `css-10-four-colors` | 4x3 grid, four frogs each on their own-colored lily pad | 4x `containedIn` |
+| `css-11-shift` | 8x6 grid with lettered columns (A-H) and numbered rows (1-6); 6 colored frogs, each lily pad shifted by the same vector | 6x `overlapCenter` |
+| `css-12-rainbow` | 6x3 grid with labels; 6 frogs on top in a scrambled order, lily pads below in rainbow order | 6x `overlapCenter` |
+| `css-13-rotate` | 6x6 grid, no labels; each lily pad sits at the point symmetric to its frog's starting cell (180 deg rotation about the grid's center) | 6x `overlapCenter` |
+
+Levels 11-12 introduce a labelled grid — column letters and row numbers as
+real text nodes in `aiScene.html` (not CSS `content`) — a coordinate
+language shared by the player and the model that never reveals where a
+lily pad is. `css-13` does not need labels: it is already a CSS grid (like
+`css-06`-`css-10`), so a cell can be described relative to other cells
+without letters/numbers. The point of each of these three is to replace a
+frog-by-frog enumeration with a single rule that is expensive to describe
+by listing every cell and easy to state imprecisely: `css-11-shift` checks
+whether the player notices the shared shift vector; `css-12-rainbow`
+checks that the lily pad order is named as a single well-known sequence,
+independent of the frogs' scrambled order; `css-13-rotate` checks that the
+player names the operation precisely (a 180 deg rotation, not "mirrored",
+which for an asymmetric layout gives different cells).
+
+The validation engine (`wwwroot/sandbox/runner.js`) implements 10 kinds of
+checks (`overlapCenter`, `containedIn`, `noOverlap`, `orderX`, `orderY`,
+`computedStyle`, `selectorMatches`, `textContent`, `classOnElements`,
+`elementCount`); the current catalog only uses `overlapCenter`,
+`containedIn` and (on `css-08-big-lily` only) `noOverlap` — the rest are
+implemented and available for future levels but currently unused.
+
+## HTTP API
+
+All endpoints return camelCase JSON; errors are `ProblemDetails` with a
+`detail` field.
+
+| Method & path | Purpose |
+|---|---|
+| `POST /api/players` | Create a player from a nickname, get back a `playerId`. |
+| `GET /api/players/{playerId}` | The player and their progress (`promptLength` per level); 404 if not found. |
+| `GET /api/levels` | Level list (short form, with `bestPromptLength` if `playerId` is passed). |
+| `GET /api/levels/{levelId}` | Full level detail: `scene`, checks, code template (no `systemPrompt`, no `aiScene` — those never reach the browser). |
+| `POST /api/attempts` | Register an attempt and get code back from the AI. `429` with `Retry-After` if the per-player rate limit is exceeded (10/min by default, `AppOptions.AiRequestsPerMinutePerPlayer`); `502` if the AI didn't respond — in both cases no attempt is created. |
+| `POST /api/attempts/{attemptId}/result` | Submit a run's outcome, get back `promptLength` and whether it's a new personal best. |
+| `GET /api/leaderboard/levels/{levelId}` | Top entries for one level (`take` parameter, default 20), sorted by `promptLength` ascending, ties broken by earliest completion. |
+
+There is no global leaderboard endpoint; leaderboard responses never
+include `playerId`, only a nickname and `promptLength`.
+
+## AI rate limiting
+
+`AiRateLimiter` wraps `System.Threading.RateLimiting.PartitionedRateLimiter`,
+partitioned by `playerId`, applied programmatically inside the
+`POST /api/attempts` handler (not via the ASP.NET Core `RateLimiting`
+middleware, since the partition key lives in the request body and isn't
+available yet at the middleware's partitioning stage). Default: 10 requests
+per player per minute (`PromptQuest:AiRequestsPerMinutePerPlayer`),
+configurable. Exceeding it returns `429` with a `Retry-After` header and
+does not create an attempt — this is a guard against uncontrolled spend
+against the paid Gemini quota, not a general anti-abuse system.
+
+## Security
+
+- Player code and the AI's output never run on the server — only inside a
+  sandboxed `<iframe sandbox="allow-scripts">` in the player's own browser,
+  without `allow-same-origin`, so the document gets an opaque origin: it
+  cannot reach the parent page's DOM, `localStorage`, cookies, or the
+  application's API.
+- The iframe is re-created before every run. A watchdog on the parent side
+  removes it and counts the run as failed if no result arrives within
+  `validation.timeoutMs` (guards against an infinite loop in player code).
+- Message authenticity is checked by comparing `event.source` against the
+  iframe's `contentWindow` and matching the `runId` of the request.
+- Prompt length for the personal-best record is computed server-side from
+  the already-stored `Attempt.Prompt` — the client cannot influence the
+  value directly.
+- `MaxPromptLength`/`MaxCodeLength` cap prompt and code length server-side.
+- `AiRateLimiter` caps AI requests per player per minute (see above).
+
+## Known limitations
+
+- **The pass/fail check runs entirely in the player's browser.** The
+  sandboxed iframe reports `passed` and the list of checks to the parent
+  page, which the player's browser then sends to the server; there is no
+  server-side re-verification of the scene geometry. A player who wanted to
+  could forge the `passed` value sent to `POST /api/attempts/{id}/result`
+  and record a personal best without actually solving the level — this is
+  a conscious trust boundary, not an oversight, but it means the
+  leaderboard is not resistant to a motivated client.
+- **The AI's behavior on short or ambiguous prompts has only been checked
+  by hand, not by an automated test against the real model.** The
+  automated suite (`AiAgentTests`) replaces Gemini with fakes that
+  simulate specific failure modes (exception, timeout, empty response) to
+  verify `AiAgent`'s own error handling; none of it sends a real prompt to
+  Gemini and checks the resulting CSS. Whether a given short prompt
+  reliably produces a working or a failing result has only been verified
+  manually, level by level, not systematically.
+- **In-memory mode loses all data on every restart.** This is also the
+  default mode in `Development`, since there is no shared development
+  database yet.
+- **No CI and no committed deploy configuration on this branch** — the
+  test suite is run manually (`dotnet test`).
+- A Gemini API key is currently committed in `PromptQuest.Web/appsettings.json`
+  in this repository — it needs to be rotated and removed from the file
+  (and from git history) separately from this change.
+- `ManualCodeEntry` (manual CSS entry without the AI) remains in the code
+  as an alternate mode for testing the validation engine without a real AI
+  call, but is off by default.
+- `Microsoft.Extensions.AI` is a dependency in the `.csproj` that the code
+  does not use; `ManualCodeGenerationService` exists but is no longer
+  registered in DI; the historical `LevelProgress.BestAttempts`/
+  `BestTimeMs`/`BestScore`/`TotalAttempts` and `Attempt.ElapsedMs` fields
+  remain in the schema from an earlier scoring design but are no longer
+  computed by any code path.

@@ -32,8 +32,7 @@ public sealed class RunnerBrowserFixture : IAsyncLifetime
 
 public sealed class RunnerBrowserTests : IClassFixture<RunnerBrowserFixture>, IAsyncLifetime
 {
-    // Эталонные CSS-решения — те же, что задокументированы в SPEC.md (раздел 5)
-    // и используются в LeaderboardTests/AiAgentTests. Должны совпадать с
+    // Эталонные CSS-решения для каждого уровня каталога. Должны совпадать с
     // levels.json (checks/scene) — расхождение считать багом сцены, не теста.
     private static readonly Dictionary<string, string> ReferenceSolutions = new()
     {
