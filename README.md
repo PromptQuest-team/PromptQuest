@@ -68,13 +68,12 @@ dotnet run --project PromptQuest.Web
 
 Without a connection string (or with an empty `Host`/`Database`/`Username`)
 the app fails fast at startup with a clear configuration error in this mode
-— it never falls back to in-memory silently. In `Development`, with this
-mode on, the schema (`Players`, `Attempts`, `LevelProgresses`) is
-created/updated automatically on startup (`Database.Migrate()`); in
-in-memory mode no migration runs at all.
+— it never falls back to in-memory silently. Whenever this mode is on (in
+any environment, not just `Development`), the schema (`Players`,
+`Attempts`, `LevelProgresses`) is created/updated automatically on startup
+(`Database.Migrate()`); in in-memory mode no migration runs at all.
 
-For environments with their own deployment step, migrations can be applied
-manually instead:
+Migrations can also be applied manually instead:
 
 ```
 dotnet ef database update --project PromptQuest.Web
@@ -85,9 +84,47 @@ not already installed). Migrations live in `PromptQuest.Web/Migrations/`
 (`InitialCreate`, `AddBestPromptLength`).
 
 **Secrets must never be stored in `appsettings.json`** — only via
-`dotnet user-secrets` (development) or environment variables (prod/CI). As
-of the last audit, `PromptQuest.Web/appsettings.json` in this repository
-still contains a committed Gemini API key — see "Known limitations".
+`dotnet user-secrets` (development) or environment variables (prod/CI).
+`Gemini:ApiKey` in `PromptQuest.Web/appsettings.json` is currently an empty
+string in this repository, so the app will not be able to call Gemini
+until you supply a real key yourself via `dotnet user-secrets`/an
+environment variable, as shown above — see also "Known limitations" for a
+caveat about this key's git history.
+
+### Deployment
+
+A `Dockerfile` builds the app with the .NET 9 SDK (`dotnet publish`) and
+runs it on the `mcr.microsoft.com/dotnet/aspnet:9.0` runtime image, with
+`ASPNETCORE_ENVIRONMENT=Production`. The container listens on the port
+given by the `PORT` environment variable (defaulting to `10000`), which is
+the convention [Render](https://render.com) uses — the Dockerfile and
+`dockerignore` in this repository are written for a Render web service
+specifically, not for a generic container host.
+
+`dotnet user-secrets` only stores values on the machine you run the command
+on — they do not get copied into the Docker image, so they are a
+development-only mechanism and have no effect in this container. For a
+real deployment, configure these as environment variables in the hosting
+platform itself (e.g. Render's own environment-variable settings), never
+by editing `appsettings.json`:
+
+- `ConnectionStrings__Default`
+- `Gemini__ApiKey`
+- `Gemini__Model` (optional — see `appsettings.json` for the current default)
+- `PromptQuest__UseInMemoryStorage` (set to `false` for a real deployment;
+  see "Running locally" — in any environment other than `Development` this
+  flag has no effect and PostgreSQL is always required regardless of its
+  value)
+
+Since the migration-on-startup code runs in any environment whenever a
+real database is configured (not just `Development`, see "Running
+locally"), a deployment using this Dockerfile applies pending EF Core
+migrations automatically on container startup — there is no separate
+migration step to run.
+
+The `PromptQuest.Web.csproj` file also declares a `UserSecretsId`, which
+only enables local `dotnet user-secrets` storage for this project — it has
+no bearing on the deployed container.
 
 ### Running tests
 
@@ -136,13 +173,14 @@ the lily pad is visible (non-zero size, opaque fill).
 |---|---|
 | `PromptQuest.sln` | Solution file: `PromptQuest.Web` and `PromptQuest.Web.Tests`. |
 | `README.md` | This file. |
+| `Dockerfile` / `dockerignore` | Container build for deployment (Render) — see "Deployment" above. |
 | `.gitignore` / `.gitattributes` | Standard ignore rules and line-ending normalization. |
 
 ### `PromptQuest.Web/`
 
 | Path | Purpose |
 |---|---|
-| `Program.cs` | Storage selection via `StorageRegistration.AddStorage` (`PromptQuest:UseInMemoryStorage`, Development-only, default `true`; PostgreSQL everywhere else), automatic migration on startup in Development when a real database is in use, Gemini client and rate limiter registration, static files (with `Cache-Control: no-cache`) and endpoints. |
+| `Program.cs` | Storage selection via `StorageRegistration.AddStorage` (`PromptQuest:UseInMemoryStorage`, Development-only, default `true`; PostgreSQL everywhere else), automatic migration on startup whenever a real database is in use (any environment), Gemini client and rate limiter registration, static files (with `Cache-Control: no-cache`) and endpoints. |
 | `appsettings.json` / `appsettings.Development.json` | `PromptQuest`/`Gemini` configuration; secrets (`ConnectionStrings:Default`, `Gemini:ApiKey`) do not belong here — only via `dotnet user-secrets`/environment variables. |
 | `AI/AiAgent.cs` | `ICodeGenerationService` implementation on top of Gemini: system instruction built from `level.SystemPrompt` + `level.AiScene`; any failure returns `Success=false`. |
 | `Configuration/AppOptions.cs` | Typed model of the `PromptQuest` configuration section (prompt/code length limits, AI timeout and rate limit, etc.). |
@@ -418,11 +456,14 @@ against the paid Gemini quota, not a general anti-abuse system.
 - **In-memory mode loses all data on every restart.** This is also the
   default mode in `Development`, since there is no shared development
   database yet.
-- **No CI and no committed deploy configuration on this branch** — the
-  test suite is run manually (`dotnet test`).
-- A Gemini API key is currently committed in `PromptQuest.Web/appsettings.json`
-  in this repository — it needs to be rotated and removed from the file
-  (and from git history) separately from this change.
+- **No CI** — the test suite is run manually (`dotnet test`); there is a
+  `Dockerfile` for deployment (see "Deployment" above) but no automated
+  pipeline that builds or deploys it.
+- `Gemini:ApiKey` in `PromptQuest.Web/appsettings.json` is empty in the
+  current code, but an earlier real-looking key value is still recoverable
+  from this repository's git history (older commits) — history rewriting
+  to purge it, and rotating that old value, have not been done as part of
+  this change.
 - `ManualCodeEntry` (manual CSS entry without the AI) remains in the code
   as an alternate mode for testing the validation engine without a real AI
   call, but is off by default.
