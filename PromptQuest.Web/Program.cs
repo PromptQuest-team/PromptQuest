@@ -41,7 +41,7 @@ var app = builder.Build();
 // in-memory branch, so this must stay conditional on useInMemoryStorage, not
 // just on the environment. Production/Staging are expected to apply
 // migrations as part of their own deployment process.
-if (app.Environment.IsDevelopment() && !useInMemoryStorage)
+if (!useInMemoryStorage)
 {
     using var scope = app.Services.CreateScope();
     scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
