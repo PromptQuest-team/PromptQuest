@@ -14,8 +14,8 @@ public sealed class LevelDefinition
 
     // «Вид сцены для ИИ» — ограниченная разметка/CSS без кувшинок и без данных,
     // по которым можно вывести положение цели. Это единственное описание сцены,
-    // уходящее в запрос к ИИ (см. AI/AiAgent.cs, SPEC-ADDENDUM-02.md). Полная
-    // Scene остаётся только для рендера игроку и для валидатора.
+    // уходящее в запрос к ИИ (см. AI/AiAgent.cs). Полная Scene остаётся только
+    // для рендера игроку и для валидатора.
     public LevelScene AiScene { get; init; } = new();
 
     public string CodeTemplate { get; init; } = "";

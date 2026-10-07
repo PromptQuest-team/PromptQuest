@@ -9,8 +9,10 @@ namespace PromptQuest.Web.AI
 {
     // Реализация ICodeGenerationService поверх Gemini. Не содержит знаний про
     // конкретную сцену (пруд/лягушка/кувшинка) — инструкция собирается из
-    // level.SystemPrompt и level.AiScene конкретного уровня (SPEC-ADDENDUM-02.md).
-    // level.Goal/level.Hint сюда никогда не попадают (SPEC-ADDENDUM-01.md, раздел A).
+    // level.SystemPrompt и level.AiScene конкретного уровня (разметка без
+    // кувшинок и данных об их положении). level.Goal/level.Hint сюда никогда
+    // не попадают — иначе модель решала бы уровень по описанию цели, минуя
+    // промт игрока.
     public class AiAgent : ICodeGenerationService
     {
         // AskAsync — protected internal virtual и BuildSystemInstruction — internal
